@@ -1,0 +1,5 @@
+{
+	"watch": ["views", "scss", "app.js"],
+	"ext": "js,njk,scss",
+	"exec": "node app.js"
+  }

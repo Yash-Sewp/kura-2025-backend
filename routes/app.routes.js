@@ -3,7 +3,7 @@ const calmRoutes = require("./calm.routes");
 module.exports = (app) => {
   
   app.get("/", (req, res) => {
-    res.render("home");
+    res.render("home.njk");
   });
 
   // Pages
@@ -11,7 +11,7 @@ module.exports = (app) => {
     try {
       const Calm = require("../models/calm.model"); // Import Calm model
       const calmActivities = await Calm.find(); // Fetch activities from MongoDB
-      res.render("activities/calm/index", { calmActivities });
+      res.render("activities/calm/index.njk", { calmActivities });
     } catch (err) {
       console.error(err);
       res.status(500).send("Error loading activities");
@@ -19,7 +19,7 @@ module.exports = (app) => {
   });
 
   app.get("/activities/calm/create", (req, res) => {
-    res.render("activities/calm/create");
+    res.render("activities/calm/create.njk");
   });
 
   // API Routes
