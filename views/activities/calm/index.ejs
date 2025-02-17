@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calm Activities</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Calm Activities</h1>
+
+    <!-- Add Activity Button -->
+    <a href="/activities/calm/create" class="btn btn-success mb-3">+ Add New Activity</a>
+
+    <% if (calmActivities.length===0) { %>
+      <div class="alert alert-warning">No calm activities found.</div>
+      <% } else { %>
+        <div class="row">
+          <% calmActivities.forEach(activity=> { %>
+            <div class="col-md-4">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <%= activity.title %>
+                  </h5>
+                  <p class="card-text">
+                    <%= activity.description || "No description provided." %>
+                  </p>
+                  <p class="text-muted"><strong>Summary:</strong>
+                    <%= activity.summary || "N/A" %>
+                  </p>
+                  <a href="<%= activity.url %>" class="btn btn-primary" target="_blank">View More</a>
+                </div>
+              </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
