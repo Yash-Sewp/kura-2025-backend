@@ -22,6 +22,35 @@ app.use(express.static(path.join(__dirname, "public")));
 // Routes
 require('./routes/app.routes')(app);
 
+// Function to handle the API call logic
+async function pingServer() {
+  try {
+    let url = 'https://kura-2025-backend.onrender.com/';  // Default URL for non-production environments
+
+    // Make the GET request to the determined URL
+    await axios.get(url);
+    console.log(`Pinged ${url} successfully at ${new Date().toISOString()}`);
+  } catch (error) {
+    console.error(`Error pinging ${url}:`, error.message);
+  }
+}
+
+// Initialize the cron job
+function initializeCronJob() {
+  if (process.env.NODE_ENV === 'production') {
+    // Schedule the cron job to run every 15 minutes in production
+    cron.schedule('*/15 * * * *', async () => {
+      console.log('Cron job triggered for pinging the server');
+      await pingServer();
+    });
+
+    console.log('Cron job for server pinging has been scheduled');
+  }
+}
+
+// Call the initializeCronJob function when the app starts
+initializeCronJob();
+
 // Configuring the database
 mongoose.Promise = global.Promise;
 
