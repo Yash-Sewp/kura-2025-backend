@@ -7,18 +7,21 @@
 
     <form action="/api/move" method="POST">
       <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
+        <label for="title" class="form-label fw-bold">Title</label>
         <input type="text" class="form-control" id="title" name="title" required>
       </div>
       <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
+        <label for="description" class="form-label fw-bold">Description</label>
         <textarea class="form-control" id="description" name="description"></textarea>
       </div>
       <div class="mb-3">
-        <label for="url" class="form-label">URL</label>
+        <label for="url" class="form-label fw-bold">URL</label>
         <input type="url" class="form-control" id="url" name="url" required>
       </div>
-      <button type="submit" class="btn btn-primary">Create Activity</button>
+      
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Create Activity</button>
+      </div>
     </form>
 
     <div class="text-center mt-3">
