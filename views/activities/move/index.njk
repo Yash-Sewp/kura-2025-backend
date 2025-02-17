@@ -1,0 +1,28 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Move Activities</h1>
+
+  <!-- Add Activity Button -->
+  <a href="/activities/move/create" class="btn btn-success mb-3">+ Add New Activity</a>
+
+  {% if moveActivities.length === 0 %}
+  <div class="alert alert-warning">No move activities found.</div>
+  {% else %}
+  <div class="row">
+    {% for activity in moveActivities %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">{{ activity.title }}</h5>
+          <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          <a href="{{ activity.url }}" class="btn btn-primary" target="_blank">View More</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

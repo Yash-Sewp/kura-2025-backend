@@ -1,0 +1,29 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="text-center text-primary mb-4">Create Move Activity</h2>
+
+    <form action="/api/move" method="POST">
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="url" class="form-label">URL</label>
+        <input type="url" class="form-control" id="url" name="url" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Activity</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/activities/move" class="btn btn-outline-secondary">Back to Activities</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
