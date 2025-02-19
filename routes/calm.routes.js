@@ -7,5 +7,6 @@ router.get("/:id", calmController.getCalmActivityById);
 router.post("/", calmController.createCalmActivity);
 router.put("/:id", calmController.updateCalmActivity);
 router.delete("/:id", calmController.deleteCalmActivity);
+router.patch("/:id/isWatched", calmController.updateIsWatched);
 
 module.exports = router;

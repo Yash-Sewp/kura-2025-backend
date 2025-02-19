@@ -13,8 +13,12 @@ const CalmSchema = new mongoose.Schema({
 	},
 	url: {
 		type: String,
-    required: true
-	}
+    	required: true
+	},
+	isWatched: {
+		type: Boolean,
+		default: false
+	},
 });
 
 module.exports = mongoose.model("Calm", CalmSchema);
