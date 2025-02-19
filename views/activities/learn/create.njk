@@ -1,0 +1,85 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="text-center text-primary mb-4">Create a New Learn Activity</h2>
+
+    <form action="/api/learn" method="POST">
+      <!-- Title -->
+      <div class="mb-3">
+        <label for="title" class="form-label fw-bold">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required placeholder="Enter activity title">
+      </div>
+
+      <!-- Instructor -->
+      <div class="mb-3">
+        <label for="instructor" class="form-label fw-bold">Instructor</label>
+        <input type="text" class="form-control" id="instructor" name="instructor" placeholder="Enter instructor name">
+      </div>
+
+      <!-- Videos -->
+      <div class="mb-3">
+        <label for="videos" class="form-label fw-bold">Videos</label>
+        <div id="video-fields">
+          <div class="input-group mb-2">
+            <input type="text" class="form-control" name="videos[0][title]" placeholder="Video title" required>
+            <input type="url" class="form-control" name="videos[0][url]" placeholder="Video URL" required>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="addVideoField()">Add Another Video</button>
+      </div>
+
+      <!-- Audios -->
+      <div class="mb-3">
+        <label for="audios" class="form-label fw-bold">Audios</label>
+        <div id="audio-fields">
+          <div class="input-group mb-2">
+            <input type="text" class="form-control" name="audios[0][title]" placeholder="Audio title" required>
+            <input type="url" class="form-control" name="audios[0][url]" placeholder="Audio URL" required>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="addAudioField()">Add Another Audio</button>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Create Activity</button>
+      </div>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/activities/learn" class="btn btn-outline-secondary">Back to Activities</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let videoIndex = 1;
+  let audioIndex = 1;
+
+  function addVideoField() {
+    const videoFields = document.getElementById('video-fields');
+    const newField = document.createElement('div');
+    newField.className = 'input-group mb-2';
+    newField.innerHTML = `
+      <input type="text" class="form-control" name="videos[${videoIndex}][title]" placeholder="Video title" required>
+      <input type="url" class="form-control" name="videos[${videoIndex}][url]" placeholder="Video URL" required>
+    `;
+    videoFields.appendChild(newField);
+    videoIndex++;
+  }
+
+  function addAudioField() {
+    const audioFields = document.getElementById('audio-fields');
+    const newField = document.createElement('div');
+    newField.className = 'input-group mb-2';
+    newField.innerHTML = `
+      <input type="text" class="form-control" name="audios[${audioIndex}][title]" placeholder="Audio title" required>
+      <input type="url" class="form-control" name="audios[${audioIndex}][url]" placeholder="Audio URL" required>
+    `;
+    audioFields.appendChild(newField);
+    audioIndex++;
+  }
+</script>
+{% endblock %}

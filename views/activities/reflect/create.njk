@@ -1,0 +1,45 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="text-center text-primary mb-4">Create a New Reflect Activity</h2>
+
+    <form action="/api/reflect" method="POST">
+      <!-- Title -->
+      <div class="mb-3">
+        <label for="title" class="form-label fw-bold">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required placeholder="Enter activity title">
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label for="description" class="form-label fw-bold">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3"
+          placeholder="Describe the activity"></textarea>
+      </div>
+
+      <!-- Summary -->
+      <div class="mb-3">
+        <label for="summary" class="form-label fw-bold">Summary</label>
+        <input type="text" class="form-control" id="summary" name="summary" placeholder="Enter a brief summary">
+      </div>
+
+      <!-- URL -->
+      <div class="mb-3">
+        <label for="url" class="form-label fw-bold">Resource URL</label>
+        <input type="url" class="form-control" id="url" name="url" required placeholder="https://example.com">
+      </div>
+
+      <!-- Submit Button -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Create Activity</button>
+      </div>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/activities/reflect" class="btn btn-outline-secondary">Back to Activities</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

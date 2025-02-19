@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const CalmSchema = new mongoose.Schema({
-	title: {
+const ReflectSchema = new mongoose.Schema({
+  title: {
 		type: String,
 		required: true,
 	},
@@ -17,4 +17,4 @@ const CalmSchema = new mongoose.Schema({
 	}
 });
 
-module.exports = mongoose.model("Calm", CalmSchema);
+module.exports = mongoose.model("Reflect", ReflectSchema);

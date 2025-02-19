@@ -66,20 +66,3 @@ exports.deleteCalmActivity = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-// Update the isWatched field of a Calm activity by ID
-exports.updateIsWatched = async (req, res) => {
-  try {
-    const updatedActivity = await Calm.findByIdAndUpdate(
-      req.params.id,
-      { isWatched: req.body.isWatched },
-      { new: true, runValidators: true }
-    );
-    if (!updatedActivity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
-    res.json(updatedActivity);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};

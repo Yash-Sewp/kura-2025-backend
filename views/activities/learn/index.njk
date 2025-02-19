@@ -1,0 +1,39 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Learn Activities</h1>
+
+  <!-- Add Activity Button -->
+  <a href="/activities/learn/create" class="btn btn-success mb-3">+ Add New Activity</a>
+
+  {% if learnActivities.length === 0 %}
+    <div class="alert alert-warning">No learn activities found.</div>
+  {% else %}
+    <div class="row">
+      {% for activity in learnActivities %}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title">{{ activity.title }}</h5>
+              <p class="card-text">{{ activity.instructor or "No instructor provided." }}</p>
+              <h6>Videos:</h6>
+              <ul>
+                {% for video in activity.videos %}
+                  <li><a href="{{ video.url }}" target="_blank">{{ video.title }}</a></li>
+                {% endfor %}
+              </ul>
+              <h6>Audios:</h6>
+              <ul>
+                {% for audio in activity.audios %}
+                  <li><a href="{{ audio.url }}" target="_blank">{{ audio.title }}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
