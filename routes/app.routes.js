@@ -18,6 +18,12 @@ module.exports = (app) => {
   app.post('/login', authController.login);
   // app.get('/logout', authController.logout);
 
+  // API Routes (excluded from authentication)
+  app.use("/api/calm", calmRoutes);
+  app.use("/api/move", moveRoutes);
+  app.use("/api/learn", learnRoutes);
+  app.use("/api/reflect", reflectRoutes);
+
   // Middleware to protect routes
   app.use(authMiddleware);
 
@@ -81,11 +87,5 @@ module.exports = (app) => {
   app.get("/activities/reflect/create", (req, res) => {
     res.render("activities/reflect/create.njk");
   });
-
-  // API Routes
-  app.use("/api/calm", calmRoutes);
-  app.use("/api/move", moveRoutes);
-  app.use("/api/learn", learnRoutes);
-  app.use("/api/reflect", reflectRoutes);
 
 };
