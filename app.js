@@ -5,11 +5,18 @@ const path = require("path");
 const app = express();
 const nunjucks = require('nunjucks');
 const cron = require('node-cron');
+const session = require('express-session');
 
 require('dotenv').config();
 
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 app.use(express.json()); // For parsing JSON data
+
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: true
+}));
 
 // Set up Nunjucks as the view engine
 nunjucks.configure('views', {

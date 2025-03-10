@@ -2,12 +2,24 @@ const calmRoutes = require("./calm.routes");
 const moveRoutes = require("./move.routes");
 const learnRoutes = require("./learn.routes");
 const reflectRoutes = require("./reflect.routes");
+const authController = require('../controllers/authController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 module.exports = (app) => {
   
-  app.get("/", (req, res) => {
+  app.get("/", authMiddleware, (req, res) => {
     res.render("home.njk");
   });
+
+  // Login routes
+  app.get('/login', async (req, res) => {
+    res.render('login.njk');
+  });
+  app.post('/login', authController.login);
+  // app.get('/logout', authController.logout);
+
+  // Middleware to protect routes
+  app.use(authMiddleware);
 
   // Pages
   app.get("/activities/calm", async (req, res) => {
