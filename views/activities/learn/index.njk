@@ -16,6 +16,7 @@
           <div class="card mb-4">
             <div class="card-body">
               <h5 class="card-title">{{ activity.title }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ activity.subTitle or "No sub title provided." }}</h6>
               <p class="card-text">{{ activity.instructor or "No instructor provided." }}</p>
               <h6>Videos:</h6>
               <ul>

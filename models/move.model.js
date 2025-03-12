@@ -8,10 +8,14 @@ const MoveSchema = new mongoose.Schema({
 	description: {
 		type: String
 	},
-	url: {
+	videoUrl: {
 		type: String,
 		required: true
-	}
+	},
+  imagePlaceholder: {
+    type: String,
+    required: true
+  }
 });
 
 module.exports = mongoose.model("Move", MoveSchema);

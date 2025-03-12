@@ -5,6 +5,9 @@ const LearnSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+  subTitle: {
+    type: String,
+  },
 	instructor: {
 		type: String
 	},

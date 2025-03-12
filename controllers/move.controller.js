@@ -26,8 +26,8 @@ exports.getMoveActivityById = async (req, res) => {
 // Create a new Move activity
 exports.createMoveActivity = async (req, res) => {
   try {
-    const { title, description, url } = req.body;
-    const newMoveActivity = new Move({ title, description, url });
+    const { title, description, videoUrl, imagePlaceholder } = req.body;
+    const newMoveActivity = new Move({ title, description, videoUrl, imagePlaceholder });
     await newMoveActivity.save();
     res.redirect("/activities/move");
   } catch (err) {

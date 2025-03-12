@@ -14,10 +14,10 @@
     {% for activity in moveActivities %}
     <div class="col-md-4">
       <div class="card mb-4">
+        <img src="{{ activity.imagePlaceholder }}" class="card-img-top" alt="Activity Image">
         <div class="card-body">
           <h5 class="card-title">{{ activity.title }}</h5>
           <p class="card-text">{{ activity.description or "No description provided." }}</p>
-          <a href="{{ activity.url }}" class="btn btn-primary" target="_blank">View More</a>
         </div>
       </div>
     </div>
