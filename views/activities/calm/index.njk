@@ -19,6 +19,8 @@
               <p class="card-text">{{ activity.description or "No description provided." }}</p>
               <p class="text-muted"><strong>Summary:</strong> {{ activity.summary or "N/A" }}</p>
               <a href="{{ activity.url }}" class="btn btn-primary" target="_blank">View More</a>
+              <a href="/api/activities/calm/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
+              <a href="/api/activities/calm/delete/{{ activity.id }}" class="btn btn-danger btn-sm">Delete</a>
             </div>
           </div>
         </div>

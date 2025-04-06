@@ -59,7 +59,7 @@ exports.deleteMoveActivity = async (req, res) => {
     if (!deletedActivity) {
       return res.status(404).json({ message: "Activity not found" });
     }
-    res.json({ message: "Activity deleted successfully" });
+    res.redirect("/activities/move"); // Redirect to the activities page after deletion
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

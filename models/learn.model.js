@@ -11,6 +11,12 @@ const LearnSchema = new mongoose.Schema({
 	instructor: {
 		type: String
 	},
+  featureImage: {
+    type: String,
+  },
+  description: {
+    type: String,
+  },
   videos: [
     {
       title: {

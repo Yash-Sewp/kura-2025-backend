@@ -26,8 +26,8 @@ exports.getLearnActivityById = async (req, res) => {
 // Create a new Learn activity
 exports.createLearnActivity = async (req, res) => {
   try {
-    const { title, subTitle, instructor, videos, audios } = req.body;
-    const newLearnActivity = new Learn({ title, subTitle, instructor, videos, audios });
+    const { title, subTitle, instructor, videos, audios, featureImage, description } = req.body;
+    const newLearnActivity = new Learn({ title, subTitle, instructor, videos, audios, featureImage, description });
     await newLearnActivity.save();
     res.redirect("/activities/learn");
   } catch (err) {

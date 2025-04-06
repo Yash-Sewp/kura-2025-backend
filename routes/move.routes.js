@@ -6,6 +6,6 @@ router.get("/", moveController.getAllMoveActivities);
 router.get("/:id", moveController.getMoveActivityById);
 router.post("/", moveController.createMoveActivity);
 router.put("/:id", moveController.updateMoveActivity);
-router.delete("/:id", moveController.deleteMoveActivity);
+router.delete("/delete/:id", moveController.deleteMoveActivity);
 
 module.exports = router;
