@@ -1,0 +1,30 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Edit Learn Activity</h1>
+  <form action="/api/learn/update/{{ learnActivity.id }}" method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title" value="{{ learnActivity.title }}" required>
+    </div>
+    <div class="mb-3">
+      <label for="subTitle" class="form-label">Subtitle</label>
+      <input type="text" class="form-control" id="subTitle" name="subTitle" value="{{ learnActivity.subTitle }}">
+    </div>
+    <div class="mb-3">
+      <label for="instructor" class="form-label">Instructor</label>
+      <input type="text" class="form-control" id="instructor" name="instructor" value="{{ learnActivity.instructor }}">
+    </div>
+    <div class="mb-3">
+      <label for="featureImage" class="form-label">Feature Image URL</label>
+      <input type="text" class="form-control" id="featureImage" name="featureImage" value="{{ learnActivity.featureImage }}">
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="3">{{ learnActivity.description }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+</div>
+{% endblock %}

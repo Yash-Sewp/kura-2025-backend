@@ -64,3 +64,16 @@ exports.deleteMoveActivity = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Render the Edit Move Activity page
+exports.renderEditMoveActivityPage = async (req, res) => {
+  try {
+    const moveActivity = await Move.findById(req.params.id);
+    if (!moveActivity) {
+      return res.status(404).send("Activity not found");
+    }
+    res.render("activities/move/edit", { moveActivity });
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+};

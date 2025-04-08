@@ -1,0 +1,22 @@
+{% extends "layouts/layout.njk" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Edit Move Activity</h1>
+  <form action="/api/move/update/{{ moveActivity.id }}" method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title" value="{{ moveActivity.title }}" required>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="3">{{ moveActivity.description }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="imagePlaceholder" class="form-label">Image URL</label>
+      <input type="text" class="form-control" id="imagePlaceholder" name="imagePlaceholder" value="{{ moveActivity.imagePlaceholder }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+</div>
+{% endblock %}

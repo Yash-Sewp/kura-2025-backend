@@ -20,7 +20,7 @@
               <p class="text-muted"><strong>Summary:</strong> {{ activity.summary or "N/A" }}</p>
               <a href="{{ activity.url }}" class="btn btn-primary" target="_blank">View More</a>
               <a href="/api/activities/reflect/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
-              <a href="/api/activities/reflect/delete/{{ activity.id }}" class="btn btn-danger btn-sm">Delete</a>
+              <button class="btn btn-danger btn-sm delete-btn" data-id="{{ activity.id }}">Delete</button>
             </div>
           </div>
         </div>
@@ -28,4 +28,35 @@
     </div>
   {% endif %}
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const deleteButtons = document.querySelectorAll(".delete-btn");
+
+    deleteButtons.forEach(button => {
+      button.addEventListener("click", async (event) => {
+        const activityId = event.target.getAttribute("data-id");
+
+        if (confirm("Are you sure you want to delete this activity?")) {
+          try {
+            const response = await fetch(`/api/reflect/delete/${activityId}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json"
+              }
+            });
+
+            if (response.ok) {
+              alert("Activity deleted successfully!");
+              location.reload(); // Reload the page to reflect changes
+            }
+          } catch (error) {
+            console.error("Error deleting activity:", error);
+            alert("An error occurred. Please try again.");
+          }
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}
