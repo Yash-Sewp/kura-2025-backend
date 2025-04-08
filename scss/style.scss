@@ -1,6 +1,60 @@
+// Theme Colors
+$greenColor: #61BD69;
+$greyColor: #333333;
+$purpleColor: #65558F;
+$yellowColor: #FFB800;
+
+// Global Styles
 body {
-  background-color: #f0f0f0;
+  background-color: $greyColor !important;
+  color: #fff !important;
   font-family: "Arial", sans-serif;
   margin: 0;
   padding: 0;
+}
+
+input {
+  --bs-border-radius: 0;
+}
+
+.btn {
+  border: none !important;
+  --bs-border-radius-sm: 0 !important;
+  --bs-border-radius-lg: 0 !important;
+  --bs-border-radius: 0 !important;
+
+  &.btn-primary {
+    background-color: $greenColor;
+    color: #fff;
+
+    &:hover, &:focus, &:active {
+      background-color: darken($greenColor, 10%) !important;
+    }
+  }
+}
+
+// Header Styles
+header {
+  background-color: $purpleColor;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+// Footer Styles
+footer {
+  background-color: $greyColor;
+  color: $yellowColor;
+  padding: 10px;
+  text-align: center;
+}
+
+// Links
+a {
+  color: $yellowColor;
+  text-decoration: none;
+
+  &:hover {
+    color: $greenColor;
+  }
 }

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="mb-4">Edit Reflect Activity</h1>
-  <form action="/api/reflect/update/{{ reflectActivity.id }}" method="POST">
+  <form id="reflectForm" action="/api/reflect/update/{{ reflectActivity.id }}" method="POST">
     <div class="mb-3">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ reflectActivity.title }}" required>
@@ -22,5 +22,32 @@
     </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
+  <script>
+    document.getElementById('reflectForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch(this.action, {
+          method: 'PUT', // Use PUT or PATCH for updates
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(Object.fromEntries(formData)),
+        });
+
+        if (response.ok) {
+          alert('Reflect activity updated successfully!');
+          window.location.href = '/activities/reflect';
+        } else {
+          const errorData = await response.json();
+          alert(`Failed to update reflect activity: ${errorData.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error updating reflect activity:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
 </div>
 {% endblock %}

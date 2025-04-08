@@ -43,6 +43,20 @@ module.exports = (app) => {
     res.render("activities/calm/create.njk");
   });
 
+  app.get("/activities/calm/edit/:id", async (req, res) => {
+    try {
+      const Calm = require("../models/calm.model"); // Import Calm model
+      const calmActivity = await Calm.findById(req.params.id); // Fetch activity by ID from MongoDB
+      if (!calmActivity) {
+        return res.status(404).send("Activity not found");
+      }
+      res.render("activities/calm/edit.njk", { calmActivity });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error loading activity");
+    }
+  });
+
   app.get("/activities/move", async (req, res) => {
     try {
       const Move = require("../models/move.model"); // Import Move model
@@ -85,6 +99,20 @@ module.exports = (app) => {
 
   app.get("/activities/learn/create", (req, res) => {
     res.render("activities/learn/create.njk");
+  });
+
+  app.get("/activities/learn/edit/:id", async (req, res) => {
+    try {
+      const Learn = require("../models/learn.model"); // Import Learn model
+      const learnActivity = await Learn.findById(req.params.id); // Fetch activity by ID from MongoDB
+      if (!learnActivity) {
+        return res.status(404).send("Activity not found");
+      }
+      res.render("activities/learn/edit.njk", { learnActivity });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Error loading activity");
+    }
   });
 
   app.get("/activities/reflect", async (req, res) => {

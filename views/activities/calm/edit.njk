@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="mb-4">Edit Calm Activity</h1>
-  <form action="/api/calm/update/{{ calmActivity.id }}" method="POST">
+  <form id="calmForm" action="/api/calm/update/{{ calmActivity.id }}" method="POST">
     <div class="mb-3">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ calmActivity.title }}" required>
@@ -22,5 +22,32 @@
     </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
+  <script>
+    document.getElementById('calmForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch(this.action, {
+          method: 'PUT', // Use PUT or PATCH for updates
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(Object.fromEntries(formData)),
+        });
+
+        if (response.ok) {
+          alert('Calm activity updated successfully!');
+          window.location.href = '/activities/calm';
+        } else {
+          const errorData = await response.json();
+          alert(`Failed to update calm activity: ${errorData.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error updating calm activity:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
 </div>
 {% endblock %}
