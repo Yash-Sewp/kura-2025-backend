@@ -1,35 +1,136 @@
 {% extends "layouts/layout.njk" %}
 
+{% from "partials/breadcrumbs.njk" import breadcrumbs %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container my-5">
+  {{ breadcrumbs([{ label: "Home", url: "/" }, { label: "Learn Activities", url: "/activities/learn" }, { label: "Edit", url: "#" }]) }}
   <h1 class="mb-4">Edit Learn Activity</h1>
   <form id="learnForm" action="/api/learn/update/{{ learnActivity.id }}" method="POST">
-    <div class="mb-3">
+    <div class="mb-5">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ learnActivity.title }}" required>
     </div>
-    <div class="mb-3">
+    <div class="mb-5">
       <label for="subTitle" class="form-label">Subtitle</label>
       <input type="text" class="form-control" id="subTitle" name="subTitle" value="{{ learnActivity.subTitle }}">
     </div>
-    <div class="mb-3">
+    <div class="mb-5">
       <label for="instructor" class="form-label">Instructor</label>
       <input type="text" class="form-control" id="instructor" name="instructor" value="{{ learnActivity.instructor }}">
     </div>
-    <div class="mb-3">
+    <div class="mb-5">
       <label for="featureImage" class="form-label">Feature Image URL</label>
       <input type="text" class="form-control" id="featureImage" name="featureImage" value="{{ learnActivity.featureImage }}">
     </div>
-    <div class="mb-3">
+    <div class="mb-5">
       <label for="description" class="form-label">Description</label>
       <textarea class="form-control" id="description" name="description" rows="3">{{ learnActivity.description }}</textarea>
+    </div>
+    <div class="mb-5">
+      <label for="videos" class="form-label">Videos</label>
+      <div id="videoFields">
+        {% for video in learnActivity.videos %}
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" name="videos[{{ loop.index0 }}][title]" placeholder="Video Title" value="{{ video.title }}" required>
+          <input type="text" class="form-control" name="videos[{{ loop.index0 }}][url]" placeholder="Video URL" value="{{ video.url }}" required>
+          <button type="button" class="btn btn-danger remove-video">Remove</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="addVideo" class="btn btn-secondary">Add Video</button>
+    </div>
+    <div class="mb-5">
+      <label for="audios" class="form-label">Audios</label>
+      <div id="audioFields">
+        {% for audio in learnActivity.audios %}
+        <div class="input-group mb-2">
+          <input type="text" class="form-control" name="audios[{{ loop.index0 }}][title]" placeholder="Audio Title" value="{{ audio.title }}" required>
+          <input type="text" class="form-control" name="audios[{{ loop.index0 }}][url]" placeholder="Audio URL" value="{{ audio.url }}" required>
+          <button type="button" class="btn btn-danger remove-audio">Remove</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="addAudio" class="btn btn-secondary">Add Audio</button>
     </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
   <script>
+    const removedVideos = [];
+    const removedAudios = [];
+
+    document.getElementById('addVideo').addEventListener('click', function () {
+      const videoFields = document.getElementById('videoFields');
+      const index = videoFields.children.length;
+      const div = document.createElement('div');
+      div.className = 'input-group mb-2';
+      div.innerHTML = `
+        <input type="text" class="form-control" name="videos[${index}][title]" placeholder="Video Title" required>
+        <input type="text" class="form-control" name="videos[${index}][url]" placeholder="Video URL" required>
+        <button type="button" class="btn btn-danger remove-video">Remove</button>
+      `;
+      videoFields.appendChild(div);
+    });
+
+    document.getElementById('addAudio').addEventListener('click', function () {
+      const audioFields = document.getElementById('audioFields');
+      const index = audioFields.children.length;
+      const div = document.createElement('div');
+      div.className = 'input-group mb-2';
+      div.innerHTML = `
+        <input type="text" class="form-control" name="audios[${index}][title]" placeholder="Audio Title" required>
+        <input type="text" class="form-control" name="audios[${index}][url]" placeholder="Audio URL" required>
+        <button type="button" class="btn btn-danger remove-audio">Remove</button>
+      `;
+      audioFields.appendChild(div);
+    });
+
+    document.addEventListener('click', function (event) {
+      if (event.target.classList.contains('remove-video')) {
+        const videoGroup = event.target.parentElement;
+        const videoIndex = videoGroup.querySelector('input[name^="videos"]').name.match(/\d+/)[0];
+        removedVideos.push(videoIndex);
+        videoGroup.remove();
+      }
+      if (event.target.classList.contains('remove-audio')) {
+        const audioGroup = event.target.parentElement;
+        const audioIndex = audioGroup.querySelector('input[name^="audios"]').name.match(/\d+/)[0];
+        removedAudios.push(audioIndex);
+        audioGroup.remove();
+      }
+    });
+
     document.getElementById('learnForm').addEventListener('submit', async function (event) {
       event.preventDefault();
+
       const formData = new FormData(this);
+      const payload = {
+        title: formData.get('title'),
+        subTitle: formData.get('subTitle'),
+        instructor: formData.get('instructor'),
+        featureImage: formData.get('featureImage'),
+        description: formData.get('description'),
+        videos: [],
+        audios: [],
+        removedVideos: removedVideos,
+        removedAudios: removedAudios,
+      };
+
+      // Serialize videos
+      const videoFields = document.querySelectorAll('#videoFields .input-group');
+      videoFields.forEach((field) => {
+        const title = field.querySelector('input[name*="[title]"]').value;
+        const url = field.querySelector('input[name*="[url]"]').value;
+        payload.videos.push({ title, url });
+      });
+
+      // Serialize audios
+      const audioFields = document.querySelectorAll('#audioFields .input-group');
+      audioFields.forEach((field) => {
+        const title = field.querySelector('input[name*="[title]"]').value;
+        const url = field.querySelector('input[name*="[url]"]').value;
+        payload.audios.push({ title, url });
+      });
 
       try {
         const response = await fetch(this.action, {
@@ -37,7 +138,7 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(Object.fromEntries(formData)),
+          body: JSON.stringify(payload),
         });
 
         if (response.ok) {

@@ -1,7 +1,10 @@
 {% extends "layouts/layout.njk" %}
 
+{% from "partials/breadcrumbs.njk" import breadcrumbs %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container my-5">
+  {{ breadcrumbs([{ label: "Home", url: "/" }, { label: "Calm Activities", url: "/activities/calm" }, { label: "Create", url: "#" }]) }}
   <div class="card shadow-lg p-4">
     <h2 class="text-center text-primary mb-4">Create a New Calm Activity</h2>
 

@@ -1,7 +1,7 @@
 {% extends "layouts/layout.njk" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container my-5">
   <h1 class="mb-4">Learn Activities</h1>
 
   <!-- Add Activity Button -->
@@ -24,18 +24,25 @@
               <h6 class="card-subtitle mb-2 text-muted">{{ activity.subTitle or "No sub title provided." }}</h6>
               <p class="card-text">{{ activity.instructor or "No instructor provided." }}</p>
               <p class="card-text">{{ activity.description or "No description provided." }}</p>
+
+              {% if activity.videos.length > 0 %}
               <h6>Videos:</h6>
               <ul>
                 {% for video in activity.videos %}
                   <li><a href="{{ video.url }}" target="_blank">{{ video.title }}</a></li>
                 {% endfor %}
               </ul>
+              {% endif %}
+
+              {% if activity.audios.length > 0 %}
               <h6>Audios:</h6>
               <ul>
                 {% for audio in activity.audios %}
                   <li><a href="{{ audio.url }}" target="_blank">{{ audio.title }}</a></li>
                 {% endfor %}
               </ul>
+              {% endif %}
+
               <a href="/activities/learn/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
               <button class="btn btn-danger btn-sm delete-btn" data-id="{{ activity.id }}">Delete</button>
             </div>
