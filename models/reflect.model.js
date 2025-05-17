@@ -7,13 +7,6 @@ const ReflectSchema = new mongoose.Schema({
 	},
 	description: {
 		type: String
-	},
-	summary: {
-		type: String
-	},
-	url: {
-		type: String,
-    	required: true
 	}
 });
 

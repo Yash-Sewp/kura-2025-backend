@@ -26,8 +26,8 @@ exports.getReflectActivityById = async (req, res) => {
 // Create a new Reflect activity
 exports.createReflectActivity = async (req, res) => {
   try {
-    const { title, description, summary, url } = req.body;
-    const newReflectActivity = new Reflect({ title, description, summary, url });
+    const { title, description } = req.body;
+    const newReflectActivity = new Reflect({ title, description });
     await newReflectActivity.save();
     res.redirect("/activities/reflect");
   } catch (err) {
