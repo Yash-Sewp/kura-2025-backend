@@ -17,6 +17,10 @@ const LearnSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  communityScore: {
+    type: Number,
+    default: 0,
+  },
   videos: [
     {
       title: {

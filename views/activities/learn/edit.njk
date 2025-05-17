@@ -28,6 +28,10 @@
       <textarea class="form-control" id="description" name="description" rows="3">{{ learnActivity.description }}</textarea>
     </div>
     <div class="mb-5">
+      <label for="communityScore" class="form-label">Community Score</label>
+      <input type="number" class="form-control" id="communityScore" name="communityScore" min="0" max="100" value="{{ learnActivity.communityScore }}">
+    </div>
+    <div class="mb-5">
       <label for="videos" class="form-label">Videos</label>
       <div id="videoFields">
         {% for video in learnActivity.videos %}
@@ -110,6 +114,7 @@
         instructor: formData.get('instructor'),
         featureImage: formData.get('featureImage'),
         description: formData.get('description'),
+        communityScore: formData.get('communityScore'),
         videos: [],
         audios: [],
         removedVideos: removedVideos,

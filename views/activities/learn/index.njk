@@ -24,6 +24,7 @@
               <h6 class="card-subtitle mb-2 text-muted">{{ activity.subTitle or "No sub title provided." }}</h6>
               <p class="card-text">{{ activity.instructor or "No instructor provided." }}</p>
               <p class="card-text">{{ activity.description or "No description provided." }}</p>
+              <p class="card-text"> {{ activity.communityScore or "No Community Score." }}</p>
 
               {% if activity.videos.length > 0 %}
               <h6>Videos:</h6>
