@@ -18,6 +18,9 @@
         <div class="card-body">
           <h5 class="card-title">{{ activity.title }}</h5>
           <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          {% if activity.videoUrl %}
+          <p class="card-text"><a href="{{ activity.videoUrl }}" target="_blank">Watch Video</a></p>
+          {% endif %}
           <a href="/activities/move/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
           <button class="btn btn-danger btn-sm delete-btn" data-id="{{ activity.id }}">Delete</button>
         </div>
