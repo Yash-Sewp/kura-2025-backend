@@ -15,10 +15,7 @@ app.use(express.json()); // For parsing JSON data
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000 // 1 day in milliseconds
-    }
+    saveUninitialized: true
 }));
 
 // Set up Nunjucks as the view engine

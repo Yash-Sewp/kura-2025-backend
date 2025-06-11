@@ -1,6 +1,5 @@
 {
 	"editor.tabSize": 2,
 	"editor.insertSpaces": true,
-  "editor.detectIndentation": false,
-  "jira-plugin.workingProject": ""
+  "editor.detectIndentation": false
 }
