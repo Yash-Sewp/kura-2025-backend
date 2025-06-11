@@ -1,15 +1,100 @@
 {% extends "layouts/layout.njk" %}
 
 {% block content %}
-  <div class="container py-5">
-    <div class="row">
-      <div class="col-12">
-        <h2>Kura CMS</h2>
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <h2>Kura CMS</h2>
 
-        <hr>
+      <hr>
 
-        <p>Application Content Management System</p>
-      </div>
+      <p>Application Content Management System</p>
     </div>
   </div>
+
+  {% if latestMoveActivities and latestMoveActivities.length > 0 %}
+  <div class="row mt-4">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Latest Move Activities</h4>
+      <a href="/activities/move" class="btn btn-link text-white">View All</a>
+    </div>
+    {% for activity in latestMoveActivities %}
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ activity.title }}</h5>
+          <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          <a href="/activities/move/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
+          {% if activity.videoUrl %}
+          <a href="{{ activity.videoUrl }}" class="btn btn-primary btn-sm" target="_blank">Watch Video</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if latestCalmActivities and latestCalmActivities.length > 0 %}
+  <div class="row mt-4">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Latest Calm Activities</h4>
+      <a href="/activities/calm" class="btn btn-link text-white">View All</a>
+    </div>
+    {% for activity in latestCalmActivities %}
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ activity.title }}</h5>
+          <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          <a href="/activities/calm/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
+          <a href="{{ activity.url }}" class="btn btn-primary btn-sm" target="_blank">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if latestLearnActivities and latestLearnActivities.length > 0 %}
+  <div class="row mt-4">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Latest Learn Activities</h4>
+      <a href="/activities/learn" class="btn btn-link text-white">View All</a>
+    </div>
+    {% for activity in latestLearnActivities %}
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ activity.title }}</h5>
+          <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          <a href="/activities/learn/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if latestReflectActivities and latestReflectActivities.length > 0 %}
+  <div class="row mt-4">
+    <div class="col-12 d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Latest Reflect Activities</h4>
+      <a href="/activities/reflect" class="btn btn-link text-white">View All</a>
+    </div>
+    {% for activity in latestReflectActivities %}
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ activity.title }}</h5>
+          <p class="card-text">{{ activity.description or "No description provided." }}</p>
+          <a href="/activities/reflect/edit/{{ activity.id }}" class="btn btn-warning btn-sm mx-1">Edit</a>
+          <a href="{{ activity.url }}" class="btn btn-primary btn-sm" target="_blank">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

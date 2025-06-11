@@ -6,9 +6,34 @@ const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 module.exports = (app) => {
-  
-  app.get("/", authMiddleware, (req, res) => {
-    res.render("home.njk");
+
+  app.get("/", authMiddleware, async (req, res) => {
+    try {
+      const Calm = require("../models/calm.model");
+      const Move = require("../models/move.model");
+      const Learn = require("../models/learn.model");
+      const Reflect = require("../models/reflect.model");
+
+      const latestCalmActivities = await Calm.find().sort({ createdAt: -1 }).limit(3);
+      const latestMoveActivities = await Move.find().sort({ createdAt: -1 }).limit(3);
+      const latestLearnActivities = await Learn.find().sort({ createdAt: -1 }).limit(3);
+      const latestReflectActivities = await Reflect.find().sort({ createdAt: -1 }).limit(3);
+
+      res.render("home.njk", {
+        latestCalmActivities,
+        latestMoveActivities,
+        latestLearnActivities,
+        latestReflectActivities
+      });
+    } catch (err) {
+      console.error(err);
+      res.render("home.njk", {
+        latestCalmActivities: [],
+        latestMoveActivities: [],
+        latestLearnActivities: [],
+        latestReflectActivities: []
+      });
+    }
   });
 
   // Login routes
