@@ -31,8 +31,6 @@ exports.createCalmActivity = async (req, res) => {
     const { title, description, summary } = req.body;
     let url = '';
     
-    console.log(req.file);
-
     if (req.file) {
       // Upload file to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path, {
