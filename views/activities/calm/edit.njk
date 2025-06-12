@@ -6,7 +6,7 @@
 <div class="container my-5">
   {{ breadcrumbs([{ label: "Home", url: "/" }, { label: "Calm Activities", url: "/activities/calm" }, { label: "Edit", url: "#" }]) }}
   <h1 class="mb-4">Edit Calm Activity</h1>
-  <form id="calmForm" action="/api/calm/update/{{ calmActivity.id }}" method="POST">
+  <form id="calmForm" action="/api/calm/update/{{ calmActivity.id }}" method="POST" enctype="multipart/form-data">
     <div class="mb-5">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ calmActivity.title }}" required>
@@ -20,8 +20,10 @@
       <textarea class="form-control" id="summary" name="summary" rows="3">{{ calmActivity.summary }}</textarea>
     </div>
     <div class="mb-5">
-      <label for="url" class="form-label">URL</label>
-      <input type="text" class="form-control" id="url" name="url" value="{{ calmActivity.url }}" required>
+      <label for="url" class="form-label">Current Resource</label>
+      <input type="text" class="form-control mb-2" id="url" name="url" value="{{ calmActivity.url }}" readonly>
+      <label for="resourceFile" class="form-label">Replace Resource File (optional)</label>
+      <input type="file" class="form-control" id="resourceFile" name="resourceFile" accept="image/*,video/*,audio/*,.mp3,application/pdf">
     </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
@@ -32,19 +34,21 @@
 
       try {
         const response = await fetch(this.action, {
-          method: 'PUT', // Use PUT or PATCH for updates
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(Object.fromEntries(formData)),
+          method: 'PUT',
+          body: formData,
         });
 
         if (response.ok) {
           alert('Calm activity updated successfully!');
           window.location.href = '/activities/calm';
         } else {
-          const errorData = await response.json();
-          alert(`Failed to update calm activity: ${errorData.message || 'Unknown error'}`);
+          let errorText = await response.text();
+          try {
+            const errorData = JSON.parse(errorText);
+            alert(`Failed to update calm activity: ${errorData.message || 'Unknown error'}`);
+          } catch {
+            alert('Failed to update calm activity. Server returned an error page.');
+          }
         }
       } catch (error) {
         console.error('Error updating calm activity:', error);

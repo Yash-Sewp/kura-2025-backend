@@ -1,4 +1,6 @@
 const Calm = require("../models/calm.model");
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 
 // Get all Calm activities
 exports.getAllCalmActivities = async (req, res) => {
@@ -26,12 +28,25 @@ exports.getCalmActivityById = async (req, res) => {
 // Create a new Calm activity
 exports.createCalmActivity = async (req, res) => {
   try {
-    const { title, description, summary, url } = req.body;
-	
-	const newCalmActivity = new Calm({ title, description, summary, url });
+    const { title, description, summary } = req.body;
+    let url = '';
+    
+    console.log(req.file);
+
+    if (req.file) {
+      // Upload file to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto"
+      });
+      url = result.secure_url;
+      // Remove file from local uploads folder
+      fs.unlinkSync(req.file.path);
+    }
+
+    const newCalmActivity = new Calm({ title, description, summary, url });
     await newCalmActivity.save();
 
-	res.redirect("/activities/calm");
+    res.redirect("/activities/calm");
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -40,15 +55,30 @@ exports.createCalmActivity = async (req, res) => {
 // Update a Calm activity by ID
 exports.updateCalmActivity = async (req, res) => {
   try {
+    const { title, description, summary } = req.body;
+    let updateData = { title, description, summary };
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto"
+      });
+      updateData.url = result.secure_url;
+      fs.unlinkSync(req.file.path);
+    }
+
     const updatedActivity = await Calm.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
+
     if (!updatedActivity) {
       return res.status(404).json({ message: "Activity not found" });
     }
+
+    // Always respond with JSON
     res.json(updatedActivity);
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
