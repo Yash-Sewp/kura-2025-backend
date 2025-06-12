@@ -6,7 +6,7 @@
 <div class="container my-5">
   {{ breadcrumbs([{ label: "Home", url: "/" }, { label: "Learn Activities", url: "/activities/learn" }, { label: "Edit", url: "#" }]) }}
   <h1 class="mb-4">Edit Learn Activity</h1>
-  <form id="learnForm" action="/api/learn/update/{{ learnActivity.id }}" method="POST">
+  <form id="learnForm" action="/api/learn/update/{{ learnActivity.id }}" method="POST" enctype="multipart/form-data">
     <div class="mb-5">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ learnActivity.title }}" required>
@@ -20,8 +20,20 @@
       <input type="text" class="form-control" id="instructor" name="instructor" value="{{ learnActivity.instructor }}">
     </div>
     <div class="mb-5">
-      <label for="featureImage" class="form-label">Feature Image URL</label>
-      <input type="text" class="form-control" id="featureImage" name="featureImage" value="{{ learnActivity.featureImage }}">
+      <label for="featureImage" class="form-label">Feature Image</label>
+      {% if learnActivity.featureImage %}
+        <div class="mb-2">
+          <img src="{{ learnActivity.featureImage }}" alt="Feature Image" style="max-width: 200px;">
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="removeFeatureImage" name="removeFeatureImage" value="true">
+            <label class="form-check-label" for="removeFeatureImage">
+              Remove current image
+            </label>
+          </div>
+        </div>
+      {% endif %}
+      <input type="file" class="form-control" id="featureImage" name="featureImage" accept="image/*">
+      <div class="form-text">Upload a new image to replace the current one.</div>
     </div>
     <div class="mb-5">
       <label for="description" class="form-label">Description</label>
@@ -32,118 +44,85 @@
       <input type="number" class="form-control" id="communityScore" name="communityScore" min="0" max="100" value="{{ learnActivity.communityScore }}">
     </div>
     <div class="mb-5">
-      <label for="videos" class="form-label">Videos</label>
+      <label class="form-label">Videos</label>
       <div id="videoFields">
         {% for video in learnActivity.videos %}
-        <div class="input-group mb-2">
-          <input type="text" class="form-control" name="videos[{{ loop.index0 }}][title]" placeholder="Video Title" value="{{ video.title }}" required>
-          <input type="text" class="form-control" name="videos[{{ loop.index0 }}][url]" placeholder="Video URL" value="{{ video.url }}" required>
-          <button type="button" class="btn btn-danger remove-video">Remove</button>
-        </div>
+          <div class="input-group mb-2 align-items-center">
+            <input type="hidden" name="existingVideos" value='{{ video | dump | safe }}'>
+            <input type="text" class="form-control" name="videoTitles" placeholder="Video Title" value="{{ video.title }}" required>
+            {% if video.url %}
+              <a href="{{ video.url }}" target="_blank" class="btn btn-outline-secondary mx-2">View Current</a>
+            {% endif %}
+            <input type="file" class="form-control" name="videoFiles" accept="video/*">
+            <button type="button" class="btn btn-danger remove-video ms-2">Remove</button>
+          </div>
         {% endfor %}
       </div>
-      <button type="button" id="addVideo" class="btn btn-secondary">Add Video</button>
+      <button type="button" id="addVideo" class="btn btn-secondary mt-2">Add Video</button>
     </div>
     <div class="mb-5">
-      <label for="audios" class="form-label">Audios</label>
+      <label class="form-label">Audios</label>
       <div id="audioFields">
         {% for audio in learnActivity.audios %}
-        <div class="input-group mb-2">
-          <input type="text" class="form-control" name="audios[{{ loop.index0 }}][title]" placeholder="Audio Title" value="{{ audio.title }}" required>
-          <input type="text" class="form-control" name="audios[{{ loop.index0 }}][url]" placeholder="Audio URL" value="{{ audio.url }}" required>
-          <button type="button" class="btn btn-danger remove-audio">Remove</button>
-        </div>
+          <div class="input-group mb-2 align-items-center">
+            <input type="hidden" name="existingAudios" value='{{ audio | dump | safe }}'>
+            <input type="text" class="form-control" name="audioTitles" placeholder="Audio Title" value="{{ audio.title }}" required>
+            {% if audio.url %}
+              <a href="{{ audio.url }}" target="_blank" class="btn btn-outline-secondary mx-2">Listen</a>
+            {% endif %}
+            <input type="file" class="form-control" name="audioFiles" accept="audio/*">
+            <button type="button" class="btn btn-danger remove-audio ms-2">Remove</button>
+          </div>
         {% endfor %}
       </div>
-      <button type="button" id="addAudio" class="btn btn-secondary">Add Audio</button>
+      <button type="button" id="addAudio" class="btn btn-secondary mt-2">Add Audio</button>
     </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
   <script>
-    const removedVideos = [];
-    const removedAudios = [];
-
     document.getElementById('addVideo').addEventListener('click', function () {
       const videoFields = document.getElementById('videoFields');
-      const index = videoFields.children.length;
       const div = document.createElement('div');
-      div.className = 'input-group mb-2';
+      div.className = 'input-group mb-2 align-items-center';
       div.innerHTML = `
-        <input type="text" class="form-control" name="videos[${index}][title]" placeholder="Video Title" required>
-        <input type="text" class="form-control" name="videos[${index}][url]" placeholder="Video URL" required>
-        <button type="button" class="btn btn-danger remove-video">Remove</button>
+        <input type="text" class="form-control" name="videoTitles" placeholder="Video Title" required>
+        <input type="file" class="form-control" name="videoFiles" accept="video/*">
+        <button type="button" class="btn btn-danger remove-video ms-2">Remove</button>
       `;
       videoFields.appendChild(div);
     });
 
     document.getElementById('addAudio').addEventListener('click', function () {
       const audioFields = document.getElementById('audioFields');
-      const index = audioFields.children.length;
       const div = document.createElement('div');
-      div.className = 'input-group mb-2';
+      div.className = 'input-group mb-2 align-items-center';
       div.innerHTML = `
-        <input type="text" class="form-control" name="audios[${index}][title]" placeholder="Audio Title" required>
-        <input type="text" class="form-control" name="audios[${index}][url]" placeholder="Audio URL" required>
-        <button type="button" class="btn btn-danger remove-audio">Remove</button>
+        <input type="text" class="form-control" name="audioTitles" placeholder="Audio Title" required>
+        <input type="file" class="form-control" name="audioFiles" accept="audio/*">
+        <button type="button" class="btn btn-danger remove-audio ms-2">Remove</button>
       `;
       audioFields.appendChild(div);
     });
 
     document.addEventListener('click', function (event) {
       if (event.target.classList.contains('remove-video')) {
-        const videoGroup = event.target.parentElement;
-        const videoIndex = videoGroup.querySelector('input[name^="videos"]').name.match(/\d+/)[0];
-        removedVideos.push(videoIndex);
-        videoGroup.remove();
+        const group = event.target.parentElement;
+        group.remove();
       }
       if (event.target.classList.contains('remove-audio')) {
-        const audioGroup = event.target.parentElement;
-        const audioIndex = audioGroup.querySelector('input[name^="audios"]').name.match(/\d+/)[0];
-        removedAudios.push(audioIndex);
-        audioGroup.remove();
+        const group = event.target.parentElement;
+        group.remove();
       }
     });
 
     document.getElementById('learnForm').addEventListener('submit', async function (event) {
       event.preventDefault();
-
       const formData = new FormData(this);
-      const payload = {
-        title: formData.get('title'),
-        subTitle: formData.get('subTitle'),
-        instructor: formData.get('instructor'),
-        featureImage: formData.get('featureImage'),
-        description: formData.get('description'),
-        communityScore: formData.get('communityScore'),
-        videos: [],
-        audios: [],
-        removedVideos: removedVideos,
-        removedAudios: removedAudios,
-      };
-
-      // Serialize videos
-      const videoFields = document.querySelectorAll('#videoFields .input-group');
-      videoFields.forEach((field) => {
-        const title = field.querySelector('input[name*="[title]"]').value;
-        const url = field.querySelector('input[name*="[url]"]').value;
-        payload.videos.push({ title, url });
-      });
-
-      // Serialize audios
-      const audioFields = document.querySelectorAll('#audioFields .input-group');
-      audioFields.forEach((field) => {
-        const title = field.querySelector('input[name*="[title]"]').value;
-        const url = field.querySelector('input[name*="[url]"]').value;
-        payload.audios.push({ title, url });
-      });
 
       try {
         const response = await fetch(this.action, {
-          method: 'PUT', // Use PUT or PATCH for updates
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
+          method: 'PUT',
+          body: formData
         });
 
         if (response.ok) {

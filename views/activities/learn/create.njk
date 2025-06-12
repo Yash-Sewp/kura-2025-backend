@@ -8,7 +8,7 @@
   <div class="card shadow-lg p-4">
     <h2 class="text-center text-primary mb-4">Create a New Learn Activity</h2>
 
-    <form action="/api/learn" method="POST">
+    <form id="learnForm" action="/api/learn" method="POST" enctype="multipart/form-data">
       <!-- Title -->
       <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
@@ -30,7 +30,7 @@
       <!-- Feature Image -->
       <div class="mb-3">
         <label for="featureImage" class="form-label fw-bold">Feature Image URL</label>
-        <input type="url" class="form-control" id="featureImage" name="featureImage" placeholder="Enter feature image URL">
+        <input type="file" class="form-control" id="featureImage" name="featureImage" accept="image/*">
       </div>
 
       <!-- Description -->
@@ -50,8 +50,8 @@
         <label for="videos" class="form-label fw-bold">Videos</label>
         <div id="video-fields">
           <div class="input-group mb-2">
-            <input type="text" class="form-control" name="videos[0][title]" placeholder="Video title" required>
-            <input type="url" class="form-control" name="videos[0][url]" placeholder="Video URL" required>
+            <input type="text" class="form-control" name="videoTitles" placeholder="Video title">
+            <input type="file" class="form-control" name="videoFiles" accept="video/*">
           </div>
         </div>
         <button type="button" class="btn btn-secondary" onclick="addVideoField()">Add Another Video</button>
@@ -62,8 +62,8 @@
         <label for="audios" class="form-label fw-bold">Audios</label>
         <div id="audio-fields">
           <div class="input-group mb-2">
-            <input type="text" class="form-control" name="audios[0][title]" placeholder="Audio title" required>
-            <input type="url" class="form-control" name="audios[0][url]" placeholder="Audio URL" required>
+            <input type="text" class="form-control" name="audioTitles" placeholder="Audio title">
+            <input type="file" class="form-control" name="audioFiles" accept="audio/*">
           </div>
         </div>
         <button type="button" class="btn btn-secondary" onclick="addAudioField()">Add Another Audio</button>
@@ -90,8 +90,8 @@
     const newField = document.createElement('div');
     newField.className = 'input-group mb-2';
     newField.innerHTML = `
-      <input type="text" class="form-control" name="videos[${videoIndex}][title]" placeholder="Video title" required>
-      <input type="url" class="form-control" name="videos[${videoIndex}][url]" placeholder="Video URL" required>
+      <input type="text" class="form-control" name="videoTitles" placeholder="Video title" required>
+      <input type="file" class="form-control" name="videoFiles" accept="video/*">
     `;
     videoFields.appendChild(newField);
     videoIndex++;
@@ -102,11 +102,35 @@
     const newField = document.createElement('div');
     newField.className = 'input-group mb-2';
     newField.innerHTML = `
-      <input type="text" class="form-control" name="audios[${audioIndex}][title]" placeholder="Audio title" required>
-      <input type="url" class="form-control" name="audios[${audioIndex}][url]" placeholder="Audio URL" required>
+      <input type="text" class="form-control" name="audioTitles" placeholder="Audio title" required>
+      <input type="file" class="form-control" name="audioFiles" accept="audio/*">
     `;
     audioFields.appendChild(newField);
     audioIndex++;
   }
+
+  // --- Add this block for AJAX submit ---
+  document.getElementById('learnForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+
+    try {
+      const response = await fetch(this.action, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Learn activity created successfully!');
+        window.location.href = '/activities/learn';
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to create learn activity: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error creating learn activity:', error);
+      alert('An error occurred. Please try again.');
+    }
+  });
 </script>
 {% endblock %}
