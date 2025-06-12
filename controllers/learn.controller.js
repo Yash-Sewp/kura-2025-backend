@@ -103,9 +103,8 @@ exports.updateLearnActivity = async (req, res) => {
     }
 
     // Handle videos upload
-    let videos = [];
-
     // Parse existing videos from hidden fields
+    let videos = [];
     if (req.body.existingVideos) {
       const existing = Array.isArray(req.body.existingVideos) ? req.body.existingVideos : [req.body.existingVideos];
       existing.forEach(v => videos.push(JSON.parse(v)));
@@ -145,7 +144,8 @@ exports.updateLearnActivity = async (req, res) => {
         fs.unlinkSync(file.path);
       }
     } else if (req.body.audios) {
-      audios = Array.isArray(req.body.audios) ? req.body.audios : [req.body.audios];
+      // If audios are provided as URLs (not files)
+      audios = audios.concat(Array.isArray(req.body.audios) ? req.body.audios : [req.body.audios]);
     }
 
     const updatedActivity = await Learn.findByIdAndUpdate(

@@ -49,7 +49,7 @@
         {% for video in learnActivity.videos %}
           <div class="input-group mb-2 align-items-center">
             <input type="hidden" name="existingVideos" value='{{ video | dump | safe }}'>
-            <input type="text" class="form-control" name="videoTitles" placeholder="Video Title" value="{{ video.title }}" required>
+            <input type="text" class="form-control" name="existingVideoTitles" value="{{ video.title }}" required>
             {% if video.url %}
               <a href="{{ video.url }}" target="_blank" class="btn btn-outline-secondary mx-2">View Current</a>
             {% endif %}
@@ -57,6 +57,12 @@
             <button type="button" class="btn btn-danger remove-video ms-2">Remove</button>
           </div>
         {% endfor %}
+        <!-- For new videos -->
+        <div class="input-group mb-2 align-items-center">
+          <input type="text" class="form-control" name="videoTitles" placeholder="Video Title" required>
+          <input type="file" class="form-control" name="videoFiles" accept="video/*">
+          <button type="button" class="btn btn-danger remove-video ms-2">Remove</button>
+        </div>
       </div>
       <button type="button" id="addVideo" class="btn btn-secondary mt-2">Add Video</button>
     </div>
@@ -65,15 +71,24 @@
       <div id="audioFields">
         {% for audio in learnActivity.audios %}
           <div class="input-group mb-2 align-items-center">
+            <!-- Hidden field for backend to keep existing audio object -->
             <input type="hidden" name="existingAudios" value='{{ audio | dump | safe }}'>
-            <input type="text" class="form-control" name="audioTitles" placeholder="Audio Title" value="{{ audio.title }}" required>
+            <!-- Editable title for existing audio (optional, for display only) -->
+            <input type="text" class="form-control" name="existingAudioTitles" value="{{ audio.title }}" required>
             {% if audio.url %}
               <a href="{{ audio.url }}" target="_blank" class="btn btn-outline-secondary mx-2">Listen</a>
             {% endif %}
+            <!-- Option to upload a new file to replace existing audio -->
             <input type="file" class="form-control" name="audioFiles" accept="audio/*">
             <button type="button" class="btn btn-danger remove-audio ms-2">Remove</button>
           </div>
         {% endfor %}
+        <!-- For new audios -->
+        <div class="input-group mb-2 align-items-center">
+          <input type="text" class="form-control" name="audioTitles" placeholder="Audio Title" required>
+          <input type="file" class="form-control" name="audioFiles" accept="audio/*">
+          <button type="button" class="btn btn-danger remove-audio ms-2">Remove</button>
+        </div>
       </div>
       <button type="button" id="addAudio" class="btn btn-secondary mt-2">Add Audio</button>
     </div>
