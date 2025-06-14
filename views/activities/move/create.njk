@@ -8,7 +8,7 @@
   <div class="card shadow-lg p-4">
     <h2 class="text-center text-primary mb-4">Create Move Activity</h2>
 
-    <form action="/api/move" method="POST">
+    <form id="moveForm" action="/api/move" method="POST">
       <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
         <input type="text" class="form-control" id="title" name="title" required>
@@ -17,13 +17,24 @@
         <label for="description" class="form-label fw-bold">Description</label>
         <textarea class="form-control" id="description" name="description"></textarea>
       </div>
-      <div class="mb-3">
-        <label for="url" class="form-label fw-bold">Video URL</label>
-        <input type="string" class="form-control" id="videoUrl" name="videoUrl" required>
+      <div class="mb-5">
+        <label for="videoFile" class="form-label">Video File</label>
+        <input type="file" class="form-control" id="videoFile" name="videoFile" accept="video/*">
+        {% if moveActivity.videoUrl %}
+          <div class="mt-2">
+            <a href="{{ moveActivity.videoUrl }}" target="_blank" class="btn btn-outline-secondary">View Current Video</a>
+          </div>
+        {% endif %}
       </div>
-      <div class="mb-3">
-        <label for="imagePlaceholder" class="form-label fw-bold">Image Placeholder URL</label>
-        <input type="url" class="form-control" id="imagePlaceholder" name="imagePlaceholder" required>
+
+      <div class="mb-5">
+        <label for="imageFile" class="form-label">Image File</label>
+        <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+        {% if moveActivity.imagePlaceholder %}
+          <div class="mt-2">
+            <img src="{{ moveActivity.imagePlaceholder }}" alt="Current Image" style="max-width: 200px;">
+          </div>
+        {% endif %}
       </div>
       
       <div class="d-grid">
@@ -36,4 +47,29 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.getElementById('moveForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+
+    try {
+      const response = await fetch(this.action, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Move activity created successfully!');
+        window.location.href = '/activities/move';
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to create move activity: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      alert('An error occurred. Please try again.');
+      console.error(error);
+    }
+  });
+</script>
 {% endblock %}
