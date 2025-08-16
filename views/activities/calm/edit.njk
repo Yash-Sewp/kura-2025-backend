@@ -24,37 +24,164 @@
       <input type="text" class="form-control mb-2" id="url" name="url" value="{{ calmActivity.url }}" readonly>
       <label for="resourceFile" class="form-label">Replace Resource File (optional)</label>
       <input type="file" class="form-control" id="resourceFile" name="resourceFile" accept=".mp3">
+      <div class="form-text">Upload a new audio file to replace the current one. Maximum size: 10MB</div>
+      <div id="audioInfo" class="mt-2 d-none"></div>
     </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+      <span class="btn-text">Save Changes</span>
+      <span class="btn-loading d-none">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Updating Activity...
+      </span>
+    </button>
   </form>
+  
+  <div class="text-center mt-3">
+    <a href="/activities/calm" class="btn btn-outline-secondary">Back to Activities</a>
+  </div>
+</div>
+
+<!-- Full Screen Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0, 0, 0, 0.7); z-index: 9999;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 id="loadingMessage" class="text-light mb-2">Processing...</h4>
+    <p id="loadingSubMessage" class="text-light-50 mb-0">Please wait while we update your calm activity.</p>
+  </div>
+</div>
   <script>
+    // File size validation constants
+    const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB
+    
+    // Loading overlay functions
+    function showLoading(message = 'Processing...', subMessage = 'Please wait while we update your calm activity.') {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingSubMessage').textContent = subMessage;
+      document.getElementById('loadingOverlay').classList.remove('d-none');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('d-none');
+    }
+    
+    function updateLoadingMessage(message, subMessage) {
+      document.getElementById('loadingMessage').textContent = message;
+      if (subMessage) {
+        document.getElementById('loadingSubMessage').textContent = subMessage;
+      }
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function validateFileSize(file, fileType, maxSize, maxSizeMB) {
+      if (file && file.size > maxSize) {
+        alert(`${fileType} too large! Maximum size is ${maxSizeMB}MB.`);
+        return false;
+      }
+      return true;
+    }
+    
+    function showFileInfo(file, infoElementId) {
+      const infoElement = document.getElementById(infoElementId);
+      if (file) {
+        infoElement.innerHTML = `
+          <div class="alert alert-info">
+            <strong>Selected:</strong> ${file.name}<br>
+            <strong>Size:</strong> ${formatFileSize(file.size)}
+          </div>
+        `;
+        infoElement.classList.remove('d-none');
+      } else {
+        infoElement.classList.add('d-none');
+      }
+    }
+    
+    // Add event listener for audio file input
+    document.getElementById('resourceFile').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        if (validateFileSize(file, 'Audio file', MAX_AUDIO_SIZE, 10)) {
+          showFileInfo(file, 'audioInfo');
+        } else {
+          this.value = ''; // Clear the file input
+        }
+      } else {
+        document.getElementById('audioInfo').classList.add('d-none');
+      }
+    });
+    
     document.getElementById('calmForm').addEventListener('submit', async function (event) {
       event.preventDefault();
+      
+      // Check if a new audio file is selected
+      const audioFile = document.getElementById('resourceFile').files[0];
+      const hasNewFile = audioFile;
+      
+      // Validate file size if new file is selected
+      if (audioFile && !validateFileSize(audioFile, 'Audio file', MAX_AUDIO_SIZE, 10)) {
+        return;
+      }
+      
+      // Show loading overlay
+      if (hasNewFile) {
+        showLoading('Preparing to update...', 'Validating file and preparing form data...');
+      } else {
+        showLoading('Updating activity...', 'Saving your changes...');
+      }
+      
       const formData = new FormData(this);
 
       try {
+        // Update loading message for upload if file is being updated
+        if (hasNewFile) {
+          updateLoadingMessage('Uploading audio...', 'Please wait while we upload your new audio file to Cloudinary...');
+        }
+        
         const response = await fetch(this.action, {
           method: 'PUT',
           body: formData,
         });
 
+        // Update loading message for processing
+        updateLoadingMessage('Processing...', 'Updating your calm activity...');
+
         if (response.ok) {
-          alert('Calm activity updated successfully!');
-          window.location.href = '/activities/calm';
+          updateLoadingMessage('Success!', 'Your calm activity has been updated successfully!');
+          setTimeout(() => {
+            hideLoading();
+            alert('Calm activity updated successfully!');
+            window.location.href = '/activities/calm';
+          }, 1000);
         } else {
-          let errorText = await response.text();
-          try {
-            const errorData = JSON.parse(errorText);
-            alert(`Failed to update calm activity: ${errorData.message || 'Unknown error'}`);
-          } catch {
-            alert('Failed to update calm activity. Server returned an error page.');
+          hideLoading();
+          const contentType = response.headers.get('content-type');
+          
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            alert(`Failed to update calm activity: ${errorData.message || errorData.error || 'Unknown error'}`);
+          } else {
+            const errorText = await response.text();
+            if (errorText.includes('File too large')) {
+              alert('File too large! Please choose a file smaller than 10MB.');
+            } else {
+              alert('Failed to update calm activity. Server returned an error page.');
+            }
           }
         }
       } catch (error) {
+        hideLoading();
         console.error('Error updating calm activity:', error);
         alert('An error occurred. Please try again.');
       }
     });
   </script>
-</div>
 {% endblock %}

@@ -97,38 +97,85 @@ exports.createMoveActivity = async (req, res) => {
 // Update a Move activity by ID
 exports.updateMoveActivity = async (req, res) => {
   try {
+    console.log('=== UPDATE MOVE ACTIVITY DEBUG ===');
+    console.log('Request params:', req.params);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+    
     let { title, description } = req.body;
     let updateData = { title, description };
 
     // Handle video upload
     if (req.files && req.files.videoFile && req.files.videoFile[0]) {
-      const result = await cloudinary.uploader.upload(req.files.videoFile[0].path, { resource_type: "video" });
-      updateData.videoUrl = result.secure_url;
-      fs.unlinkSync(req.files.videoFile[0].path);
+      try {
+        console.log('Uploading new video file:', req.files.videoFile[0].originalname);
+        const result = await cloudinary.uploader.upload(req.files.videoFile[0].path, { resource_type: "video" });
+        updateData.videoUrl = result.secure_url;
+        fs.unlinkSync(req.files.videoFile[0].path);
+        console.log('New video uploaded successfully:', updateData.videoUrl);
+      } catch (uploadError) {
+        console.error('Video upload error:', uploadError);
+        return res.status(400).json({ error: 'Failed to upload video file', message: uploadError.message });
+      }
     } else if (req.body.videoUrl) {
       updateData.videoUrl = req.body.videoUrl;
+      console.log('Keeping existing video URL:', updateData.videoUrl);
     }
 
     // Handle image upload
     if (req.files && req.files.imageFile && req.files.imageFile[0]) {
-      const result = await cloudinary.uploader.upload(req.files.imageFile[0].path, { resource_type: "image" });
-      updateData.imagePlaceholder = result.secure_url;
-      fs.unlinkSync(req.files.imageFile[0].path);
+      try {
+        console.log('Uploading new image file:', req.files.imageFile[0].originalname);
+        const result = await cloudinary.uploader.upload(req.files.imageFile[0].path, { resource_type: "image" });
+        updateData.imagePlaceholder = result.secure_url;
+        fs.unlinkSync(req.files.imageFile[0].path);
+        console.log('New image uploaded successfully:', updateData.imagePlaceholder);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(400).json({ error: 'Failed to upload image file', message: uploadError.message });
+      }
     } else if (req.body.imagePlaceholder) {
       updateData.imagePlaceholder = req.body.imagePlaceholder;
+      console.log('Keeping existing image URL:', updateData.imagePlaceholder);
     }
+
+    console.log('Final update data:', updateData);
 
     const updatedActivity = await Move.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true, runValidators: true }
     );
+    
     if (!updatedActivity) {
+      console.log('Activity not found with ID:', req.params.id);
       return res.status(404).json({ message: "Activity not found" });
     }
+    
+    console.log('Activity updated successfully:', updatedActivity);
     res.json(updatedActivity);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Update move activity error:', err);
+    console.error('Error name:', err.name);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ 
+        error: 'Validation error', 
+        message: err.message 
+      });
+    } else if (err.name === 'CastError') {
+      return res.status(400).json({ 
+        error: 'Invalid ID format', 
+        message: 'The provided activity ID is not valid' 
+      });
+    } else {
+      return res.status(500).json({ 
+        error: 'Server error', 
+        message: err.message 
+      });
+    }
   }
 };
 

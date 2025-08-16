@@ -33,7 +33,8 @@
         </div>
       {% endif %}
       <input type="file" class="form-control" id="featureImage" name="featureImage" accept="image/*">
-      <div class="form-text">Upload a new image to replace the current one.</div>
+      <div class="form-text">Upload a new image to replace the current one. Maximum size: 10MB</div>
+      <div id="featureImageInfo" class="mt-2 d-none"></div>
     </div>
     <div class="mb-5">
       <label for="description" class="form-label">Description</label>
@@ -92,19 +93,120 @@
       </div>
       <button type="button" id="addAudio" class="btn btn-secondary mt-2">Add Audio</button>
     </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+      <span class="btn-text">Save Changes</span>
+      <span class="btn-loading d-none">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Updating Activity...
+      </span>
+    </button>
   </form>
+  
+  <div class="text-center mt-3">
+    <a href="/activities/learn" class="btn btn-outline-secondary">Back to Activities</a>
+  </div>
+</div>
+
+<!-- Full Screen Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0, 0, 0, 0.7); z-index: 9999;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 id="loadingMessage" class="text-light mb-2">Processing...</h4>
+    <p id="loadingSubMessage" class="text-light-50 mb-0">Please wait while we update your learn activity.</p>
+  </div>
+</div>
   <script>
+    // File size validation constants
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+    const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
+    const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB for audio
+    
+    // Loading overlay functions
+    function showLoading(message = 'Processing...', subMessage = 'Please wait while we update your learn activity.') {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingSubMessage').textContent = subMessage;
+      document.getElementById('loadingOverlay').classList.remove('d-none');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('d-none');
+    }
+    
+    function updateLoadingMessage(message, subMessage) {
+      document.getElementById('loadingMessage').textContent = message;
+      if (subMessage) {
+        document.getElementById('loadingSubMessage').textContent = subMessage;
+      }
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function validateFileSize(file, fileType, maxSize, maxSizeMB) {
+      if (file && file.size > maxSize) {
+        alert(`${fileType} too large! Maximum size is ${maxSizeMB}MB.`);
+        return false;
+      }
+      return true;
+    }
+    
+    function showFileInfo(file, infoElementId) {
+      const infoElement = document.getElementById(infoElementId);
+      if (file) {
+        infoElement.innerHTML = `
+          <div class="alert alert-info">
+            <strong>Selected:</strong> ${file.name}<br>
+            <strong>Size:</strong> ${formatFileSize(file.size)}
+          </div>
+        `;
+        infoElement.classList.remove('d-none');
+      } else {
+        infoElement.classList.add('d-none');
+      }
+    }
+    
+    // Add event listener for feature image input
+    document.getElementById('featureImage').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        if (validateFileSize(file, 'Image file', MAX_IMAGE_SIZE, 10)) {
+          showFileInfo(file, 'featureImageInfo');
+        } else {
+          this.value = ''; // Clear the file input
+        }
+      } else {
+        document.getElementById('featureImageInfo').classList.add('d-none');
+      }
+    });
+    
     document.getElementById('addVideo').addEventListener('click', function () {
       const videoFields = document.getElementById('videoFields');
       const div = document.createElement('div');
       div.className = 'input-group mb-2 align-items-center';
       div.innerHTML = `
         <input type="text" class="form-control" name="videoTitles" placeholder="Video Title" required>
-        <input type="file" class="form-control" name="videoFiles" accept="video/*">
+        <input type="file" class="form-control video-file" name="videoFiles" accept="video/*">
+        <span class="input-group-text">Max: 50MB</span>
         <button type="button" class="btn btn-danger remove-video ms-2">Remove</button>
       `;
       videoFields.appendChild(div);
+      
+      // Add change event listener to the new video file input
+      const newVideoInput = div.querySelector('.video-file');
+      newVideoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && !validateFileSize(file, 'Video file', MAX_VIDEO_SIZE, 50)) {
+          this.value = ''; // Clear the file input
+        }
+      });
     });
 
     document.getElementById('addAudio').addEventListener('click', function () {
@@ -113,10 +215,20 @@
       div.className = 'input-group mb-2 align-items-center';
       div.innerHTML = `
         <input type="text" class="form-control" name="audioTitles" placeholder="Audio Title" required>
-        <input type="file" class="form-control" name="audioFiles" accept="audio/*">
+        <input type="file" class="form-control audio-file" name="audioFiles" accept="audio/*">
+        <span class="input-group-text">Max: 10MB</span>
         <button type="button" class="btn btn-danger remove-audio ms-2">Remove</button>
       `;
       audioFields.appendChild(div);
+      
+      // Add change event listener to the new audio file input
+      const newAudioInput = div.querySelector('.audio-file');
+      newAudioInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && !validateFileSize(file, 'Audio file', MAX_AUDIO_SIZE, 10)) {
+          this.value = ''; // Clear the file input
+        }
+      });
     });
 
     document.addEventListener('click', function (event) {
@@ -132,26 +244,92 @@
 
     document.getElementById('learnForm').addEventListener('submit', async function (event) {
       event.preventDefault();
+      
+      // Check if any new files are selected
+      const featureImage = document.getElementById('featureImage').files[0];
+      const videoFiles = document.querySelectorAll('input[name="videoFiles"]');
+      const audioFiles = document.querySelectorAll('input[name="audioFiles"]');
+      
+      let hasNewFiles = false;
+      
+      // Check feature image
+      if (featureImage) {
+        hasNewFiles = true;
+        if (!validateFileSize(featureImage, 'Image file', MAX_IMAGE_SIZE, 10)) {
+          return;
+        }
+      }
+      
+      // Check video files
+      for (let videoFile of videoFiles) {
+        if (videoFile.files[0]) {
+          hasNewFiles = true;
+          if (!validateFileSize(videoFile.files[0], 'Video file', MAX_VIDEO_SIZE, 50)) {
+            return;
+          }
+        }
+      }
+      
+      // Check audio files
+      for (let audioFile of audioFiles) {
+        if (audioFile.files[0]) {
+          hasNewFiles = true;
+          if (!validateFileSize(audioFile.files[0], 'Audio file', MAX_AUDIO_SIZE, 10)) {
+            return;
+          }
+        }
+      }
+      
+      // Show loading overlay
+      if (hasNewFiles) {
+        showLoading('Preparing to update...', 'Validating files and preparing form data...');
+      } else {
+        showLoading('Updating activity...', 'Saving your changes...');
+      }
+      
       const formData = new FormData(this);
 
       try {
+        // Update loading message for upload if files are being updated
+        if (hasNewFiles) {
+          updateLoadingMessage('Uploading files...', 'Please wait while we upload your new files to Cloudinary...');
+        }
+        
         const response = await fetch(this.action, {
           method: 'PUT',
           body: formData
         });
 
+        // Update loading message for processing
+        updateLoadingMessage('Processing...', 'Updating your learn activity...');
+
         if (response.ok) {
-          alert('Learn activity updated successfully!');
-          window.location.href = '/activities/learn';
+          updateLoadingMessage('Success!', 'Your learn activity has been updated successfully!');
+          setTimeout(() => {
+            hideLoading();
+            alert('Learn activity updated successfully!');
+            window.location.href = '/activities/learn';
+          }, 1000);
         } else {
-          const errorData = await response.json();
-          alert(`Failed to update learn activity: ${errorData.message || 'Unknown error'}`);
+          hideLoading();
+          const contentType = response.headers.get('content-type');
+          
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            alert(`Failed to update learn activity: ${errorData.message || errorData.error || 'Unknown error'}`);
+          } else {
+            const errorText = await response.text();
+            if (errorText.includes('File too large')) {
+              alert('File too large! Please choose a file smaller than the maximum allowed size.');
+            } else {
+              alert('An error occurred. Please try again.');
+            }
+          }
         }
       } catch (error) {
+        hideLoading();
         console.error('Error updating learn activity:', error);
         alert('An error occurred. Please try again.');
       }
     });
   </script>
-</div>
-{% endblock %}

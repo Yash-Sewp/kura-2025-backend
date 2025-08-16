@@ -93,11 +93,40 @@
   </div>
 </div>
 
+<!-- Full Screen Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0, 0, 0, 0.7); z-index: 9999;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 id="loadingMessage" class="text-light mb-2">Processing...</h4>
+    <p id="loadingSubMessage" class="text-light-50 mb-0">Please wait while we upload your files and create the activity.</p>
+  </div>
+</div>
+
 <script>
   // File size validation constants
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
   const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
   const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB for audio
+  
+  // Loading overlay functions
+  function showLoading(message = 'Processing...', subMessage = 'Please wait while we upload your files and create the activity.') {
+    document.getElementById('loadingMessage').textContent = message;
+    document.getElementById('loadingSubMessage').textContent = subMessage;
+    document.getElementById('loadingOverlay').classList.remove('d-none');
+  }
+  
+  function hideLoading() {
+    document.getElementById('loadingOverlay').classList.add('d-none');
+  }
+  
+  function updateLoadingMessage(message, subMessage) {
+    document.getElementById('loadingMessage').textContent = message;
+    if (subMessage) {
+      document.getElementById('loadingSubMessage').textContent = subMessage;
+    }
+  }
   
   let videoIndex = 1;
   let audioIndex = 1;
@@ -263,6 +292,7 @@
     }
 
     try {
+      showLoading('Uploading files...', 'Please wait while we upload your files.');
       const response = await fetch(this.action, {
         method: 'POST',
         body: formData
@@ -298,6 +328,8 @@
     } catch (error) {
       console.error('Network or fetch error:', error);
       alert('An error occurred while connecting to the server. Please try again.');
+    } finally {
+      hideLoading();
     }
   });
 </script>

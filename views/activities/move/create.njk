@@ -24,6 +24,14 @@
         <div id="videoInfo" class="mt-2 d-none">
           <small class="text-success">✓ Video selected: <span id="videoName"></span> (<span id="videoSize"></span>)</small>
         </div>
+        <div id="videoUploading" class="mt-2 d-none">
+          <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+              <span class="visually-hidden">Uploading...</span>
+            </div>
+            <small class="text-primary">Uploading video to Cloudinary...</small>
+          </div>
+        </div>
         {% if moveActivity.videoUrl %}
           <div class="mt-2">
             <a href="{{ moveActivity.videoUrl }}" target="_blank" class="btn btn-outline-secondary">View Current Video</a>
@@ -38,6 +46,14 @@
         <div id="imageInfo" class="mt-2 d-none">
           <small class="text-success">✓ Image selected: <span id="imageName"></span> (<span id="imageSize"></span>)</small>
         </div>
+        <div id="imageUploading" class="mt-2 d-none">
+          <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+              <span class="visually-hidden">Uploading...</span>
+            </div>
+            <small class="text-primary">Uploading image to Cloudinary...</small>
+          </div>
+        </div>
         {% if moveActivity.imagePlaceholder %}
           <div class="mt-2">
             <img src="{{ moveActivity.imagePlaceholder }}" alt="Current Image" style="max-width: 200px;">
@@ -46,7 +62,13 @@
       </div>
       
       <div class="d-grid">
-        <button type="submit" class="btn btn-success">Create Activity</button>
+        <button type="submit" class="btn btn-success" id="submitBtn">
+          <span class="btn-text">Create Activity</span>
+          <span class="btn-loading d-none">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Creating Activity...
+          </span>
+        </button>
       </div>
     </form>
 
@@ -56,10 +78,39 @@
   </div>
 </div>
 
+<!-- Full Screen Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0, 0, 0, 0.7); z-index: 9999;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 id="loadingMessage" class="text-light mb-2">Processing...</h4>
+    <p id="loadingSubMessage" class="text-light-50 mb-0">Please wait while we upload your files and create the activity.</p>
+  </div>
+</div>
+
 <script>
   // File size validation constants
   const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+  
+  // Loading overlay functions
+  function showLoading(message = 'Processing...', subMessage = 'Please wait while we upload your files and create the activity.') {
+    document.getElementById('loadingMessage').textContent = message;
+    document.getElementById('loadingSubMessage').textContent = subMessage;
+    document.getElementById('loadingOverlay').classList.remove('d-none');
+  }
+  
+  function hideLoading() {
+    document.getElementById('loadingOverlay').classList.add('d-none');
+  }
+  
+  function updateLoadingMessage(message, subMessage) {
+    document.getElementById('loadingMessage').textContent = message;
+    if (subMessage) {
+      document.getElementById('loadingSubMessage').textContent = subMessage;
+    }
+  }
   
   function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -135,51 +186,76 @@
       return;
     }
     
+    // Show loading overlay
+    showLoading('Preparing to upload...', 'Validating files and preparing form data...');
+    
     // Create FormData object for file uploads
     const formData = new FormData(this);
 
-    console.log('=== SENDING FORM DATA ===');
-    console.log('FormData created:', formData);
-    console.log('FormData entries:');
+    console.log("=== FORMDATA DEBUG ===");
+    console.log("FormData created:", formData);
+    console.log("FormData entries:");
     for (let [key, value] of formData.entries()) {
       console.log(key, ':', value);
     }
 
     try {
+      // Update loading message for upload
+      updateLoadingMessage('Uploading files...', 'Please wait while we upload your files to Cloudinary...');
+      
+      console.log('=== FETCH REQUEST DEBUG ===');
+      console.log('Sending fetch request to:', this.action);
+      console.log('Request method:', 'POST');
+      console.log('Request body:', formData);
+      
       const response = await fetch(this.action, {
         method: 'POST',
         body: formData
       });
 
+      // Update loading message for processing
+      updateLoadingMessage('Processing...', 'Creating your move activity...');
+
+      console.log('=== RESPONSE DEBUG ===');
+      console.log('Response received:', response);
       console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
       console.log('Response headers:', response.headers);
 
       if (response.ok) {
-        alert('Move activity created successfully!');
-        window.location.href = '/activities/move';
+        updateLoadingMessage('Success!', 'Your move activity has been created successfully!');
+        setTimeout(() => {
+          hideLoading();
+          alert('Move activity created successfully!');
+          window.location.href = '/activities/move';
+        }, 1000);
       } else {
-        // Try to get the error response
-        let errorMessage = 'Unknown error';
+        hideLoading();
+        const contentType = response.headers.get('content-type');
+        console.log('Response content-type:', contentType);
         
-        try {
+        if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
-          console.log('Error response data:', errorData);
-          errorMessage = errorData.message || errorData.error || 'Unknown error';
-        } catch (parseError) {
-          console.log('Could not parse error response as JSON, trying text...');
-          try {
-            const errorText = await response.text();
-            console.log('Error response text:', errorText);
-            errorMessage = errorText || 'Unknown error';
-          } catch (textError) {
-            console.log('Could not read error response:', textError);
+          console.log('Error data:', errorData);
+          alert(`Failed to create move activity: ${errorData.message || errorData.error || 'Unknown error'}`);
+        } else {
+          // Handle non-JSON responses (like HTML error pages)
+          const errorText = await response.text();
+          console.log('Error text:', errorText);
+          if (errorText.includes('File too large')) {
+            alert('File too large! Please choose a file smaller than 50MB.');
+          } else {
+            alert('An error occurred. Please try again.');
           }
         }
-        
-        alert(`Failed to create move activity: ${errorMessage}`);
       }
     } catch (error) {
-      console.error('Network or fetch error:', error);
+      hideLoading();
+      console.error('=== FETCH ERROR ===');
+      console.error('Fetch error:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       alert('An error occurred while connecting to the server. Please try again.');
     }
   });

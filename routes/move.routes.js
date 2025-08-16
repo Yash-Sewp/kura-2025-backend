@@ -23,17 +23,39 @@ const upload = multer({
   }
 });
 
+// Error handling middleware for Multer
+const handleMulterError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        error: 'File too large', 
+        message: 'The uploaded file exceeds the maximum allowed size.' 
+      });
+    }
+    return res.status(400).json({ 
+      error: 'File upload error', 
+      message: error.message 
+    });
+  } else if (error) {
+    return res.status(400).json({ 
+      error: 'File validation error', 
+      message: error.message 
+    });
+  }
+  next();
+};
+
 router.get("/", moveController.getAllMoveActivities);
 router.get("/:id", moveController.getMoveActivityById);
 router.post('/', upload.fields([
   { name: 'videoFile', maxCount: 1 },
   { name: 'imageFile', maxCount: 1 }
-]), moveController.createMoveActivity);
+]), handleMulterError, moveController.createMoveActivity);
 
 router.put('/update/:id', upload.fields([
   { name: 'videoFile', maxCount: 1 },
   { name: 'imageFile', maxCount: 1 }
-]), moveController.updateMoveActivity);
+]), handleMulterError, moveController.updateMoveActivity);
 router.delete("/delete/:id", moveController.deleteMoveActivity);
 
 module.exports = router;

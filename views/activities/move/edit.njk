@@ -26,7 +26,8 @@
         </div>
       {% endif %}
       <input type="file" class="form-control" id="videoFile" name="videoFile" accept="video/*">
-      <div class="form-text">Upload a new video to replace the current one.</div>
+      <div class="form-text">Upload a new video to replace the current one. Maximum size: 50MB</div>
+      <div id="videoInfo" class="mt-2 d-none"></div>
     </div>
 
     <div class="mb-5">
@@ -37,34 +38,211 @@
         </div>
       {% endif %}
       <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
-      <div class="form-text">Upload a new image to replace the current one.</div>
+      <div class="form-text">Upload a new image to replace the current one. Maximum size: 10MB</div>
+      <div id="imageInfo" class="mt-2 d-none"></div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+      <span class="btn-text">Save Changes</span>
+      <span class="btn-loading d-none">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Updating Activity...
+      </span>
+    </button>
   </form>
+  
+  <div class="text-center mt-3">
+    <a href="/activities/move" class="btn btn-outline-secondary">Back to Activities</a>
+  </div>
+</div>
+
+<!-- Full Screen Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="background: rgba(0, 0, 0, 0.7); z-index: 9999;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border text-light mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 id="loadingMessage" class="text-light mb-2">Processing...</h4>
+    <p id="loadingSubMessage" class="text-light-50 mb-0">Please wait while we update your move activity.</p>
+  </div>
+</div>
   <script>
+    // File size validation constants
+    const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    
+    // Loading overlay functions
+    function showLoading(message = 'Processing...', subMessage = 'Please wait while we update your move activity.') {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingSubMessage').textContent = subMessage;
+      document.getElementById('loadingOverlay').classList.remove('d-none');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('d-none');
+    }
+    
+    function updateLoadingMessage(message, subMessage) {
+      document.getElementById('loadingMessage').textContent = message;
+      if (subMessage) {
+        document.getElementById('loadingSubMessage').textContent = subMessage;
+      }
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function validateFileSize(file, fileType, maxSize, maxSizeMB) {
+      if (file && file.size > maxSize) {
+        alert(`${fileType} too large! Maximum size is ${maxSizeMB}MB.`);
+        return false;
+      }
+      return true;
+    }
+    
+    function showFileInfo(file, infoElementId) {
+      const infoElement = document.getElementById(infoElementId);
+      if (file) {
+        infoElement.innerHTML = `
+          <div class="alert alert-info">
+            <strong>Selected:</strong> ${file.name}<br>
+            <strong>Size:</strong> ${formatFileSize(file.size)}
+          </div>
+        `;
+        infoElement.classList.remove('d-none');
+      } else {
+        infoElement.classList.add('d-none');
+      }
+    }
+    
+    // Add event listeners for file inputs
+    document.getElementById('videoFile').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        if (validateFileSize(file, 'Video file', MAX_VIDEO_SIZE, 50)) {
+          showFileInfo(file, 'videoInfo');
+        } else {
+          this.value = ''; // Clear the file input
+        }
+      } else {
+        document.getElementById('videoInfo').classList.add('d-none');
+      }
+    });
+    
+    document.getElementById('imageFile').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        if (validateFileSize(file, 'Image file', MAX_IMAGE_SIZE, 10)) {
+          showFileInfo(file, 'imageInfo');
+        } else {
+          this.value = ''; // Clear the file input
+        }
+      } else {
+        document.getElementById('imageInfo').classList.add('d-none');
+      }
+    });
+    
     document.getElementById('moveForm').addEventListener('submit', async function (event) {
       event.preventDefault();
+      
+      // Check if any new files are selected
+      const videoFile = document.getElementById('videoFile').files[0];
+      const imageFile = document.getElementById('imageFile').files[0];
+      const hasNewFiles = videoFile || imageFile;
+      
+      // Validate file sizes if new files are selected
+      if (videoFile && !validateFileSize(videoFile, 'Video file', MAX_VIDEO_SIZE, 50)) {
+        return;
+      }
+      
+      if (imageFile && !validateFileSize(imageFile, 'Image file', MAX_IMAGE_SIZE, 10)) {
+        return;
+      }
+      
+      // Show loading overlay
+      if (hasNewFiles) {
+        showLoading('Preparing to update...', 'Validating files and preparing form data...');
+      } else {
+        showLoading('Updating activity...', 'Saving your changes...');
+      }
+      
       const formData = new FormData(this);
 
-    try {
-      const response = await fetch(this.action, {
-        method: 'PUT',
-        body: formData
-      });
+      try {
+        // Update loading message for upload if files are being updated
+        if (hasNewFiles) {
+          updateLoadingMessage('Uploading files...', 'Please wait while we upload your new files to Cloudinary...');
+        }
+        
+        console.log('=== SENDING UPDATE REQUEST ===');
+        console.log('Request URL:', this.action);
+        console.log('Request method:', 'PUT');
+        console.log('FormData entries:');
+        for (let [key, value] of formData.entries()) {
+          console.log(key, ':', value);
+        }
+        
+        const response = await fetch(this.action, {
+          method: 'PUT',
+          body: formData
+        });
+
+        console.log('=== RESPONSE RECEIVED ===');
+        console.log('Response status:', response.status);
+        console.log('Response status text:', response.statusText);
+        console.log('Response headers:', response.headers);
+
+        // Update loading message for processing
+        updateLoadingMessage('Processing...', 'Updating your move activity...');
 
         if (response.ok) {
-          alert('Move activity updated successfully!');
-          window.location.href = '/activities/move';
+          updateLoadingMessage('Success!', 'Your move activity has been updated successfully!');
+          setTimeout(() => {
+            hideLoading();
+            alert('Move activity updated successfully!');
+            window.location.href = '/activities/move';
+          }, 1000);
         } else {
-          const errorData = await response.json();
-          alert(`Failed to update move activity: ${errorData.message || 'Unknown error'}`);
+          hideLoading();
+          const contentType = response.headers.get('content-type');
+          console.log('Response content-type:', contentType);
+          
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            console.log('Error data:', errorData);
+            alert(`Failed to update move activity: ${errorData.message || errorData.error || 'Unknown error'}`);
+          } else {
+            const errorText = await response.text();
+            console.log('Error text:', errorText);
+            if (errorText.includes('File too large')) {
+              alert('File too large! Please choose a file smaller than 50MB.');
+            } else {
+              alert('An error occurred. Please try again.');
+            }
+          }
         }
       } catch (error) {
-        console.error('Error updating move activity:', error);
-        alert('An error occurred. Please try again.');
+        hideLoading();
+        console.error('=== FETCH ERROR DETAILS ===');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Full error object:', error);
+        
+        // More specific error messages based on error type
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          alert('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+        } else if (error.name === 'TypeError' && error.message.includes('FormData')) {
+          alert('Form error: There was a problem with the form data. Please try again.');
+        } else {
+          alert(`An error occurred: ${error.message}. Please try again.`);
+        }
       }
     });
   </script>
-</div>
 {% endblock %}
