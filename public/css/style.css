@@ -12,6 +12,8 @@ body {
 
 .card-img-top {
   --bs-card-inner-border-radius: 0 !important;
+  height: 230px;
+  object-fit: cover;
 }
 
 input, textarea {
