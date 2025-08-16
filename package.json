@@ -20,7 +20,8 @@
     "mongoose": "^8.10.1",
     "multer": "^2.0.1",
     "node-cron": "^3.0.3",
-    "nunjucks": "^3.2.4"
+    "nunjucks": "^3.2.4",
+    "axios": "^1.7.9"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
