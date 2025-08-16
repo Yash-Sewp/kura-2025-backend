@@ -28,30 +28,69 @@ exports.getMoveActivityById = async (req, res) => {
 // Create a new Move activity
 exports.createMoveActivity = async (req, res) => {
   try {
-
-    let { title, description } = req.body;
-    let videoUrl = req.body.videoFile;
-    let imagePlaceholder = req.body.imageFile;
+    console.log('=== CREATE MOVE ACTIVITY DEBUG ===');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+    console.log('Content-Type:', req.get('Content-Type'));
+    
+    const { title, description } = req.body;
+    
+    console.log('Extracted title:', title);
+    console.log('Extracted description:', description);
+    
+    // Validate required fields
+    if (!title || !title.trim()) {
+      console.log('Title validation failed - title:', title, 'trimmed:', title ? title.trim() : 'undefined');
+      return res.status(400).json({ error: 'Title is required' });
+    }
+    
+    let videoUrl = '';
+    let imagePlaceholder = '';
 
     // Upload video if file provided
     if (req.files && req.files.videoFile && req.files.videoFile[0]) {
-      const result = await cloudinary.uploader.upload(req.files.videoFile[0].path, { resource_type: "video" });
-      videoUrl = result.secure_url;
-      fs.unlinkSync(req.files.videoFile[0].path);
+      try {
+        console.log('Uploading video file:', req.files.videoFile[0].originalname);
+        const result = await cloudinary.uploader.upload(req.files.videoFile[0].path, { resource_type: "video" });
+        videoUrl = result.secure_url;
+        fs.unlinkSync(req.files.videoFile[0].path);
+        console.log('Video uploaded successfully:', videoUrl);
+      } catch (uploadError) {
+        console.error('Video upload error:', uploadError);
+        return res.status(400).json({ error: 'Failed to upload video file' });
+      }
     }
 
     // Upload image if file provided
     if (req.files && req.files.imageFile && req.files.imageFile[0]) {
-      const result = await cloudinary.uploader.upload(req.files.imageFile[0].path, { resource_type: "image" });
-      imagePlaceholder = result.secure_url;
-      fs.unlinkSync(req.files.imageFile[0].path);
+      try {
+        console.log('Uploading image file:', req.files.imageFile[0].originalname);
+        const result = await cloudinary.uploader.upload(req.files.imageFile[0].path, { resource_type: "image" });
+        imagePlaceholder = result.secure_url;
+        fs.unlinkSync(req.files.imageFile[0].path);
+        console.log('Image uploaded successfully:', imagePlaceholder);
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return res.status(400).json({ error: 'Failed to upload image file' });
+      }
     }
 
-    const newMoveActivity = new Move({ title, description, videoUrl, imagePlaceholder });
+    const newMoveActivity = new Move({ 
+      title: title.trim(), 
+      description: description ? description.trim() : '', 
+      videoUrl, 
+      imagePlaceholder 
+    });
+    
+    console.log('Move activity object to save:', newMoveActivity);
+    
     await newMoveActivity.save();
-    res.json(newMoveActivity);
+    console.log('Move activity created successfully:', newMoveActivity);
+    res.status(201).json(newMoveActivity);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Create move activity error:', err);
+    res.status(500).json({ error: 'Failed to create move activity', message: err.message });
   }
 };
 

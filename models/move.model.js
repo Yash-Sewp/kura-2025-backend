@@ -10,11 +10,11 @@ const MoveSchema = new mongoose.Schema({
 	},
 	videoUrl: {
 		type: String,
-		required: true
+		required: false
 	},
   imagePlaceholder: {
     type: String,
-    required: true
+    required: false
   }
 });
 

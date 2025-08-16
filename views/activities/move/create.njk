@@ -8,7 +8,7 @@
   <div class="card shadow-lg p-4">
     <h2 class="text-center text-primary mb-4">Create Move Activity</h2>
 
-    <form id="moveForm" action="/api/move" method="POST">
+    <form id="moveForm" action="/api/move" method="POST" enctype="multipart/form-data">
       <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
         <input type="text" class="form-control" id="title" name="title" required>
@@ -20,6 +20,10 @@
       <div class="mb-5">
         <label for="videoFile" class="form-label">Video File</label>
         <input type="file" class="form-control" id="videoFile" name="videoFile" accept="video/*">
+        <div class="form-text text-muted">Maximum file size: 50MB. Supported formats: MP4, AVI, MOV, etc.</div>
+        <div id="videoInfo" class="mt-2 d-none">
+          <small class="text-success">✓ Video selected: <span id="videoName"></span> (<span id="videoSize"></span>)</small>
+        </div>
         {% if moveActivity.videoUrl %}
           <div class="mt-2">
             <a href="{{ moveActivity.videoUrl }}" target="_blank" class="btn btn-outline-secondary">View Current Video</a>
@@ -30,6 +34,10 @@
       <div class="mb-5">
         <label for="imageFile" class="form-label">Image File</label>
         <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+        <div class="form-text text-muted">Maximum file size: 10MB. Supported formats: JPG, PNG, GIF, etc.</div>
+        <div id="imageInfo" class="mt-2 d-none">
+          <small class="text-success">✓ Image selected: <span id="imageName"></span> (<span id="imageSize"></span>)</small>
+        </div>
         {% if moveActivity.imagePlaceholder %}
           <div class="mt-2">
             <img src="{{ moveActivity.imagePlaceholder }}" alt="Current Image" style="max-width: 200px;">
@@ -49,9 +57,93 @@
 </div>
 
 <script>
+  // File size validation constants
+  const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+  const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+  
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  function validateFileSize(file, inputName, maxSize, maxSizeMB) {
+    if (file && file.size > maxSize) {
+      alert(`${inputName} is too large! Maximum file size is ${maxSizeMB}MB.`);
+      return false;
+    }
+    return true;
+  }
+  
+  function showFileInfo(file, infoId, nameId, sizeId) {
+    const infoDiv = document.getElementById(infoId);
+    const nameSpan = document.getElementById(nameId);
+    const sizeSpan = document.getElementById(sizeId);
+    
+    if (file) {
+      nameSpan.textContent = file.name;
+      sizeSpan.textContent = formatFileSize(file.size);
+      infoDiv.classList.remove('d-none');
+    } else {
+      infoDiv.classList.add('d-none');
+    }
+  }
+  
+  // Add file size validation and info display to file inputs
+  document.getElementById('videoFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      if (!validateFileSize(file, 'Video file', MAX_VIDEO_SIZE, 50)) {
+        this.value = ''; // Clear the file input
+        showFileInfo(null, 'videoInfo', 'videoName', 'videoSize');
+        return;
+      }
+      showFileInfo(file, 'videoInfo', 'videoName', 'videoSize');
+    } else {
+      showFileInfo(null, 'videoInfo', 'videoName', 'videoSize');
+    }
+  });
+  
+  document.getElementById('imageFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      if (!validateFileSize(file, 'Image file', MAX_IMAGE_SIZE, 10)) {
+        this.value = ''; // Clear the file input
+        showFileInfo(null, 'imageInfo', 'imageName', 'imageSize');
+        return;
+      }
+      showFileInfo(file, 'imageInfo', 'imageName', 'imageSize');
+    } else {
+      showFileInfo(null, 'imageInfo', 'imageName', 'imageSize');
+    }
+  });
+
   document.getElementById('moveForm').addEventListener('submit', async function(event) {
     event.preventDefault();
+    
+    // Validate file sizes before submission
+    const videoFile = document.getElementById('videoFile').files[0];
+    const imageFile = document.getElementById('imageFile').files[0];
+    
+    if (videoFile && !validateFileSize(videoFile, 'Video file', MAX_VIDEO_SIZE, 50)) {
+      return;
+    }
+    
+    if (imageFile && !validateFileSize(imageFile, 'Image file', MAX_IMAGE_SIZE, 10)) {
+      return;
+    }
+    
+    // Create FormData object for file uploads
     const formData = new FormData(this);
+
+    console.log('=== SENDING FORM DATA ===');
+    console.log('FormData created:', formData);
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, ':', value);
+    }
 
     try {
       const response = await fetch(this.action, {
@@ -59,16 +151,36 @@
         body: formData
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (response.ok) {
         alert('Move activity created successfully!');
         window.location.href = '/activities/move';
       } else {
-        const errorData = await response.json();
-        alert(`Failed to create move activity: ${errorData.message || 'Unknown error'}`);
+        // Try to get the error response
+        let errorMessage = 'Unknown error';
+        
+        try {
+          const errorData = await response.json();
+          console.log('Error response data:', errorData);
+          errorMessage = errorData.message || errorData.error || 'Unknown error';
+        } catch (parseError) {
+          console.log('Could not parse error response as JSON, trying text...');
+          try {
+            const errorText = await response.text();
+            console.log('Error response text:', errorText);
+            errorMessage = errorText || 'Unknown error';
+          } catch (textError) {
+            console.log('Could not read error response:', textError);
+          }
+        }
+        
+        alert(`Failed to create move activity: ${errorMessage}`);
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
-      console.error(error);
+      console.error('Network or fetch error:', error);
+      alert('An error occurred while connecting to the server. Please try again.');
     }
   });
 </script>
